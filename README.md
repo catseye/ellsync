@@ -58,15 +58,16 @@ is still interpreted as
 trailing slashes.)
 
 Since this configuration is named in the router, we don't even have to
-give these directory names.  We can just give the name of the stream:
+give these directory names.  We can just give the name of the stream,
+followed by a colon (more on that in a second):
 
-    ellsync router.json art
+    ellsync router.json art:
 
 If either of the directories does not exist, this will be prevented.
-Based on this, there is an option to list which streams are, at the moment,
+Based on this, there is a subcommand to list which streams are, at the moment,
 backupable:
 
-    ellsync router.json --list
+    ellsync router.json list
 
 Also, since the contents of the canonical and the cache normally
 have the same directory structure, ellsync allows a subdirectory of
@@ -78,7 +79,8 @@ This is of course as long as it is the same subdirectory.  This will fail:
 
     ellsync router.json /home/user/art/painting/ /media/user/External1/art/sculpture/
 
-And this can be combined with the short, name-the-stream syntax:
+And this can be combined with the short, name-the-stream syntax, and
+explains why there is a colon in it:
 
     ellsync router.json art:painting/
 

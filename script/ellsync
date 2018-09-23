@@ -42,8 +42,11 @@ def main(args):
         if ':' in options.from_dir:
             stream_name, subdir = options.from_dir.split(':')
         else:
-            stream_name = options.from_dir
-            subdir = ''
+            command = options.from_dir
+            if command == 'list':
+                raise NotImplementedError("NOt implemented yet")
+            else:
+                raise NotImplementedError("Arg must be stream:subdir or command; command must be one of: list")
         stream = router[stream_name]
         from_dir = stream['from']
         to_dir = stream['to']
