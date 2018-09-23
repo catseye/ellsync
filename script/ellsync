@@ -26,8 +26,11 @@ def main(args):
         help='Cache directory to sync contents to (only required when canonical dir, '
         'not stream, was specified)'
     )
-    argparser.add_argument('apply', default=False, action='store_true',
+    argparser.add_argument('--apply', default=False, action='store_true',
         help='Actually run the rsync command'
+    )
+    argparser.add_argument('--dry-run', default=False, action='store_true',
+        help='Run the rsync command as a dry run'
     )
     
     options = argparser.parse_args(args)
@@ -65,7 +68,8 @@ def main(args):
     for d in (from_dir, to_dir):
         if not os.path.isdir(d):
             raise ValueError("Directory '{}' is not present".format(d))
-    cmd = "rsync --dry-run --archive --verbose --delete {} {}".format(from_dir, to_dir)
+    rsync_options = '--dry-run ' if options.dry_run else ''
+    cmd = "rsync {}--archive --verbose --delete {} {}".format(rsync_options, from_dir, to_dir)
     print(cmd)
     if options.apply:
         check_call(cmd, shell=True)
