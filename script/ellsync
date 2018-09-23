@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 import json
 import os
+from subprocess import check_call
 
 
 def clean_dir(dirname):
@@ -24,6 +25,9 @@ def main(args):
     argparser.add_argument('to_dir', metavar='TO_DIR', nargs='?', default=None, type=str,
         help='Cache directory to sync contents to (only required when canonical dir, '
         'not stream, was specified)'
+    )
+    argparser.add_argument('apply', default=False, action='store_true',
+        help='Actually run the rsync command'
     )
     
     options = argparser.parse_args(args)
@@ -58,8 +62,13 @@ def main(args):
         if selected_stream_name is None:
             raise ValueError("Stream {} => {} was not found in router".format(from_dir, to_dir))
 
-    cmd = "rsync --archive --verbose --delete {} {}".format(from_dir, to_dir)
+    for d in (from_dir, to_dir):
+        if not os.path.isdir(d):
+            raise ValueError("Directory '{}' is not present".format(d))
+    cmd = "rsync --dry-run --archive --verbose --delete {} {}".format(from_dir, to_dir)
     print(cmd)
+    if options.apply:
+        check_call(cmd, shell=True)
 
 
 if __name__ == '__main__':
