@@ -54,6 +54,9 @@ is still interpreted as
 
     rsync --archive --verbose --delete /home/user/art/ /media/user/External1/art/
 
+(but note that the directories in the router do need to have the
+trailing slashes.)
+
 Since this configuration is named in the router, we don't even have to
 give these directory names.  We can just give the name of the stream:
 

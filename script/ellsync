@@ -48,7 +48,11 @@ def main(args):
         to_dir = clean_dir(options.to_dir)
         selected_stream_name = None
         for stream_name, stream in router.items():
-            if from_dir == stream['from'] and to_dir == stream['to']:
+            if from_dir.startswith(stream['from']) and to_dir.startswith(stream['to']):
+                from_suffix = from_dir[len(stream['from']):]
+                to_suffix = to_dir[len(stream['to']):]
+                if from_suffix != to_suffix:
+                    raise ValueError( (from_suffix, to_suffix) )
                 selected_stream_name = stream_name
                 break
         if selected_stream_name is None:
