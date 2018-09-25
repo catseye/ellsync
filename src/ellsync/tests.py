@@ -44,7 +44,8 @@ class TestEllsync(unittest.TestCase):
         main(['backup.json', 'canonical', 'cache'])
         self.assertFalse(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
-        self.assertEqual(output, 'rsync --archive --verbose --delete canonical/ cache/\n')
+        self.assertEqual(output.split('\n')[0], 'rsync --dry-run --archive --verbose --delete canonical/ cache/')
+        self.assertIn('DRY RUN', output)
 
     def test_apply(self):
         main(['backup.json', 'canonical', 'cache', '--apply'])

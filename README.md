@@ -35,9 +35,16 @@ With this router saved as `router.json` we can then say
 
 and this will in effect run
 
-    rsync --archive --verbose --delete /home/user/art/ /media/user/External1/art/
+    rsync --archive --verbose --delete --dry-run /home/user/art/ /media/user/External1/art/
 
-but if we try
+Note that by default it only runs a `--dry-run`.  It's a good practice to
+do a dry run first, to see what will be changed.  As a bonus, the files
+involved will often remain in the filesystem cache, meaning a subsequent
+actual run will go quite quickly.  To do that actual run, use `--apply`:
+
+    ellsync router.json /home/user/art/ /media/user/External1/art/ --apply
+
+Note that if we try
 
     ellsync router.json /media/user/External1/art/ /home/user/art/
 

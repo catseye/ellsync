@@ -27,9 +27,6 @@ def main(args):
     argparser.add_argument('--apply', default=False, action='store_true',
         help='Actually run the rsync command'
     )
-    argparser.add_argument('--dry-run', default=False, action='store_true',
-        help='Run the rsync command as a dry run'
-    )
     
     options = argparser.parse_args(args)
 
@@ -69,9 +66,8 @@ def main(args):
     for d in (from_dir, to_dir):
         if not os.path.isdir(d):
             raise ValueError("Directory '{}' is not present".format(d))
-    rsync_options = '--dry-run ' if options.dry_run else ''
+    rsync_options = '--dry-run ' if (not options.apply) else ''
     cmd = "rsync {}--archive --verbose --delete {} {}".format(rsync_options, from_dir, to_dir)
     print(cmd)
-    if options.apply:
-        output = check_output(cmd, shell=True, stderr=STDOUT)
-        print(output)
+    output = check_output(cmd, shell=True, stderr=STDOUT)
+    print(output)
