@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
 import json
 import os
-from subprocess import check_output, STDOUT
+import sys
+from subprocess import Popen, STDOUT, PIPE
 
 
 def clean_dir(dirname):
@@ -67,7 +68,11 @@ def main(args):
         if not os.path.isdir(d):
             raise ValueError("Directory '{}' is not present".format(d))
     rsync_options = '--dry-run ' if (not options.apply) else ''
-    cmd = "rsync {}--archive --verbose --delete {} {}".format(rsync_options, from_dir, to_dir)
-    print(cmd)
-    output = check_output(cmd, shell=True, stderr=STDOUT)
-    print(output)
+    cmd = 'rsync {}--archive --verbose --delete "{}" "{}"'.format(rsync_options, from_dir, to_dir)
+    sys.stdout.write(cmd + '\n')
+    p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE)
+    pipe = p.stdout
+    for line in p.stdout:
+        sys.stdout.write(line)
+        sys.stdout.flush()
+    p.wait()
