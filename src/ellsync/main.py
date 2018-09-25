@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import json
 import os
-from subprocess import check_call
+from subprocess import check_output, STDOUT
 
 
 def clean_dir(dirname):
@@ -73,4 +73,5 @@ def main(args):
     cmd = "rsync {}--archive --verbose --delete {} {}".format(rsync_options, from_dir, to_dir)
     print(cmd)
     if options.apply:
-        check_call(cmd, shell=True)
+        output = check_output(cmd, shell=True, stderr=STDOUT)
+        print(output)

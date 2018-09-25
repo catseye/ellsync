@@ -49,6 +49,13 @@ class TestEllsync(unittest.TestCase):
     def test_apply(self):
         main(['backup.json', 'canonical', 'cache', '--apply'])
         self.assertTrue(os.path.exists('cache/thing'))
+        output = sys.stdout.getvalue()
+        self.assertEqual(output.split('\n')[:4], [
+            'rsync --archive --verbose --delete canonical/ cache/',
+            'sending incremental file list',
+            'thing',
+            ''
+        ])
 
 
 if __name__ == '__main__':
