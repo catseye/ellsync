@@ -70,9 +70,13 @@ def main(args):
     rsync_options = '--dry-run ' if (not options.apply) else ''
     cmd = 'rsync {}--archive --verbose --delete "{}" "{}"'.format(rsync_options, from_dir, to_dir)
     sys.stdout.write(cmd + '\n')
-    p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE)
+    try:
+        p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
+    except TypeError:
+        # python 2.x
+        p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE)
     pipe = p.stdout
     for line in p.stdout:
-        sys.stdout.write(line)
+        sys.stdout.write(line.decode('utf-8'))
         sys.stdout.flush()
     p.wait()

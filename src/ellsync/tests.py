@@ -1,9 +1,14 @@
 import json
 import os
 import sys
-from StringIO import StringIO
 import unittest
 from subprocess import check_call
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+assert StringIO
 
 from ellsync.main import main
 

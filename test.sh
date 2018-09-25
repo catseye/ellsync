@@ -1,3 +1,4 @@
 #!/bin/sh
 
-PYTHONPATH=src python src/ellsync/tests.py
+PYTHONPATH=src python2 src/ellsync/tests.py || exit 1
+PYTHONPATH=src python3 src/ellsync/tests.py || exit 1
