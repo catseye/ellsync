@@ -40,7 +40,10 @@ def main(args):
         else:
             command = options.from_dir
             if command == 'list':
-                raise NotImplementedError("NOt implemented yet")
+                for stream_name, stream in router.items():
+                    if os.path.isdir(stream['from']) and os.path.isdir(stream['to']):
+                        print("{}: {} => {}".format(stream_name, stream['from'], stream['to']))
+                sys.exit(0)
             else:
                 raise NotImplementedError("Arg must be stream:subdir or command; command must be one of: list")
         stream = router[stream_name]
