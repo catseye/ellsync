@@ -1,12 +1,15 @@
 ellsync
 =======
 
-ellsync is an opinionated poka-yoke convenience wrapper for rsync.
+ellsync is an opinionated poka-yoke for rsync.
 
-*   opinionated: it was designed for a particular use case for using rsync
-    for offline backups which will be described below.
-*   poka-yoke: using rsync via ellsync prevents using it in dangerous ways.
-*   convenience: ellsync provides common shortcuts for using rsync.
+*   opinionated: it was designed for a particular use case for rsync
+    (offline backups).
+*   poka-yoke: it exposes a restricted interface to rsync, which
+    prevents using it in dangerous ways.
+
+As a side-effect it also provides some convenience, as the restricted
+interface can be accessed by shorthand form instead of verbosely.
 
 ellsync's operation is based on a *backup router* which is a JSON file
 that looks like this:
@@ -77,12 +80,13 @@ backupable:
     ellsync router.json list
 
 Also, since the contents of the canonical and the cache normally
-have the same directory structure, ellsync allows a subdirectory of
-a stream to be synced:
+have the same directory structure, ellsync allows specifying that
+only a subdirectory of a stream is to be synced:
 
     ellsync router.json /home/user/art/painting/ /media/user/External1/art/painting/
 
-This is of course as long as it is the same subdirectory.  This will fail:
+This is of course allowed only as long as it is the same subdirectory.
+This will fail:
 
     ellsync router.json /home/user/art/painting/ /media/user/External1/art/sculpture/
 
