@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from tempfile import mkdtemp
 import unittest
 from subprocess import check_call
 
@@ -22,7 +23,9 @@ class TestEllsync(unittest.TestCase):
         sys.stdout = StringIO()
         sys.stderr = StringIO()
         self.maxDiff = None
-        check_call("rm -rf canonical cache", shell=True)
+        self.dirname = mkdtemp()
+        self.prevdir = os.getcwd()
+        os.chdir(self.dirname)
         check_call("mkdir -p canonical", shell=True)
         check_call("touch canonical/thing", shell=True)
         check_call("mkdir -p cache", shell=True)
@@ -36,7 +39,8 @@ class TestEllsync(unittest.TestCase):
             f.write(json.dumps(router))
 
     def tearDown(self):
-        check_call("rm -rf canonical cache", shell=True)
+        os.chdir(self.prevdir)
+        check_call("rm -rf {}".format(self.dirname), shell=True)
         sys.stdout = self.saved_stdout
         sys.stderr = self.saved_stderr
         super(TestEllsync, self).tearDown()
