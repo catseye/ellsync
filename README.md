@@ -21,16 +21,13 @@ that looks like this:
         }
     }
 
-In this, `art` is the name of a "backup stream", in which files in
+In this, `art` is the name of a _backup stream_, in which files in
 `/media/user/External1/art/` (called the *canonical*) are periodically
 synced to `/home/user/art/` (called the *cache*).
 
 The idea is that all changes to the contents of the canonical directory
 are bona fide changes, but any change to the contents of the cache can be
 discarded.
-
-Either depository may be offline, therefore neither directory is assumed
-to exist (it might not exist if the volume is not mounted.)
 
 With this router saved as `router.json` we can then say
 
@@ -52,7 +49,7 @@ Note that if we try
     ellsync router.json /media/user/External1/art/ /home/user/art/
 
 we will be prevented, because it is an error, because the direction of
-the backup stream is always from cache to canonical.
+the backup stream is always from canonical to cache.
 
 Various other configurations are prevented.  You may have noticed that rsync
 is sensitive about whether a directory name ends in a slash or not.  ellsync
@@ -73,9 +70,11 @@ followed by a colon (more on that in a second):
 
     ellsync router.json art:
 
-If either of the directories does not exist, this will be prevented.
-Based on this, there is a subcommand to list which streams are, at the moment,
-backupable:
+Either the canonical or the cache (or both) may be offline storage (removable
+media), therefore neither directory is assumed to exist (it might not exist
+if the volume is not mounted.)  If either of the directories does not exist,
+ellsync will refuse to use this backup stream.  Based on this, there is a
+subcommand to list which streams are, at the moment, backupable:
 
     ellsync router.json list
 
