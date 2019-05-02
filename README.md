@@ -100,3 +100,12 @@ want to establish an alias like
     alias myellsync ellsync $HOME/my-standard-router.json
 
 (or whatever.)
+
+Note
+----
+
+If `rsync` encounters an error, it will abort, having only partially completed.
+In particular, if it encounters a directory which it cannot read, because it
+is for example owned by another user and not world-readable, it will abort.
+`ellsync` does not currently detect this properly (if it is detectable (I hope
+that it is!))
