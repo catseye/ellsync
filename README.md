@@ -13,6 +13,10 @@ interface can be accessed by shorthand form, but the real purpose is
 to increase safety.  (I've been burned more than once using `rsync`
 incorrectly.)
 
+### Quick usage guide
+
+#### Backup router
+
 ellsync's operation is based on a *backup router* which is a JSON file
 that looks like this:
 
@@ -31,9 +35,11 @@ The idea is that all changes to the contents of the canonical directory
 are bona fide changes, but any change to the contents of the cache can be
 discarded.
 
-With this router saved as `router.json` we can then say
+#### syncdirs
 
-    ellsync router.json sync /home/user/art/ /media/user/External1/art/
+With the above router saved as `router.json` we can then say
+
+    ellsync router.json syncdirs /home/user/art/ /media/user/External1/art/
 
 and this will in effect run
 
@@ -44,11 +50,11 @@ do a dry run first, to see what will be changed.  As a bonus, the files
 involved will often remain in the filesystem cache, meaning a subsequent
 actual run will go quite quickly.  To do that actual run, use `--apply`:
 
-    ellsync router.json sync /home/user/art/ /media/user/External1/art/ --apply
+    ellsync router.json syncdirs /home/user/art/ /media/user/External1/art/ --apply
 
 Note that if we try
 
-    ellsync router.json sync /media/user/External1/art/ /home/user/art/
+    ellsync router.json syncdirs /media/user/External1/art/ /home/user/art/
 
 we will be prevented, because it is an error, because the direction of
 the backup stream is always from canonical to cache.
@@ -57,7 +63,7 @@ Various other configurations are prevented.  You may have noticed that rsync
 is sensitive about whether a directory name ends in a slash or not.  ellsync
 detects when a trailing slash is missing and adds it.  Thus
 
-    ellsync router.json sync /media/user/External1/art /home/user/art/
+    ellsync router.json syncdirs /media/user/External1/art /home/user/art/
 
 is still interpreted as
 
@@ -66,11 +72,7 @@ is still interpreted as
 (but note that the directories in the router do need to have the
 trailing slashes.)
 
-Since this configuration is named in the router, we don't even have to
-give these directory names.  We can just give the name of the stream,
-followed by a colon (more on that in a second):
-
-    ellsync router.json sync art:
+#### list
 
 Either the canonical or the cache (or both) may be offline storage (removable
 media), therefore neither directory is assumed to exist (it might not exist
@@ -79,6 +81,14 @@ ellsync will refuse to use this backup stream.  Based on this, there is a
 subcommand to list which streams are, at the moment, backupable:
 
     ellsync router.json list
+
+#### sync
+
+Since each stream configuration is named in the router, we don't even have to
+give these directory names.  We can use the `sync` command where we give
+just the name of the stream, followed by a colon (more on that in a second):
+
+    ellsync router.json sync art:
 
 Also, since the contents of the canonical and the cache normally
 have the same directory structure, ellsync allows specifying that
@@ -95,6 +105,8 @@ And this can be combined with the short, name-the-stream syntax, and
 explains why there is a colon in it:
 
     ellsync router.json sync art:painting/
+
+### Hints and Tips
 
 You might have a router you use almost always, in which case you might
 want to establish an alias like
