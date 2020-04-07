@@ -75,11 +75,13 @@ def main(args):
     sys.stdout.write(cmd + '\n')
     try:
         p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
+        decode_line = lambda line: line
     except TypeError:
         # python 2.x
         p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE)
+        decode_line = lambda line: line.decode('utf-8')
     pipe = p.stdout
     for line in p.stdout:
-        sys.stdout.write(line.decode('utf-8'))
+        sys.stdout.write(decode_line(line))
         sys.stdout.flush()
     p.wait()
