@@ -33,6 +33,10 @@ class TestEllsync(unittest.TestCase):
             'basic': {
                 'from': 'canonical',
                 'to': 'cache',
+            },
+            'other': {
+                'from': 'canonical2',
+                'to': 'cache2',
             }
         }
         with open('backup.json', 'w') as f:
@@ -76,6 +80,24 @@ class TestEllsync(unittest.TestCase):
             'thing',
             ''
         ])
+
+    def test_stream_not_exist(self):
+        with self.assertRaises(ValueError) as ar:
+            main(['backup.json', 'sync', 'other:', '--apply'])
+        self.assertIn("Directory 'canonical2/' is not present", str(ar.exception))
+
+    def test_rename(self):
+        check_call("mkdir -p canonical/sclupture", shell=True)
+        check_call("mkdir -p cache/sclupture", shell=True)
+        main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
+        self.assertTrue(os.path.exists('canonical/sculpture'))
+        self.assertTrue(os.path.exists('cache/sculpture'))
+
+    def test_rename_not_both_subdirs_exist(self):
+        check_call("mkdir -p canonical/sclupture", shell=True)
+        with self.assertRaises(OSError) as ar:
+            main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
+        self.assertIn('Errno 2', str(ar.exception))
 
 
 if __name__ == '__main__':
