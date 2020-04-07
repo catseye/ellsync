@@ -13,9 +13,10 @@ interface can be accessed by shorthand form, but the real purpose is
 to increase safety.  (I've been burned more than once using `rsync`
 incorrectly.)
 
-### Quick usage guide
+Quick usage guide
+-----------------
 
-#### Backup router
+### Backup router
 
 ellsync's operation is based on a *backup router* which is a JSON file
 that looks like this:
@@ -35,7 +36,7 @@ The idea is that all changes to the contents of the canonical directory
 are bona fide changes, but any change to the contents of the cache can be
 discarded.
 
-#### syncdirs
+### `syncdirs` command
 
 With the above router saved as `router.json` we can then say
 
@@ -72,7 +73,7 @@ is still interpreted as
 (but note that the directories in the router do need to have the
 trailing slashes.)
 
-#### list
+### `list` command
 
 Either the canonical or the cache (or both) may be offline storage (removable
 media), therefore neither directory is assumed to exist (it might not exist
@@ -82,7 +83,7 @@ subcommand to list which streams are, at the moment, backupable:
 
     ellsync router.json list
 
-#### sync
+### `sync` command
 
 Since each stream configuration is named in the router, we don't even have to
 give these directory names.  We can use the `sync` command where we give
@@ -106,7 +107,8 @@ explains why there is a colon in it:
 
     ellsync router.json sync art:painting/
 
-### Hints and Tips
+Hints and Tips
+--------------
 
 You might have a router you use almost always, in which case you might
 want to establish an alias like
@@ -115,11 +117,26 @@ want to establish an alias like
 
 (or whatever.)
 
-Note
-----
+Notes
+-----
 
 If `rsync` encounters an error, it will abort, having only partially completed.
 In particular, if it encounters a directory which it cannot read, because it
 is for example owned by another user and not world-readable, it will abort.
 `ellsync` does not currently detect this properly (if it is detectable (I hope
 that it is!))
+
+History
+-------
+
+### 0.2
+
+Every ellsync functionality has an explicit subcommand (`list` and `sync` to
+start.)
+
+`sync` was split into `sync` (takes a stream) and `syncdirs` (takes to and
+from dirs).
+
+### 0.1
+
+Initial release.
