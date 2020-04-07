@@ -102,6 +102,44 @@ def syncdirs(router, args):
     perform_sync(from_dir, to_dir, dry_run=(not options.apply))
 
 
+def rename(router, args):
+    argparser = ArgumentParser()
+    argparser.add_argument('stream_name', metavar='STREAM', type=str,
+        help='Name of stream to operate under'
+    )
+    argparser.add_argument('existing_subdir_name', metavar='DIRNAME', type=str,
+        help='Existing subdirectory to be renamed'
+    )
+    argparser.add_argument('new_subdir_name', metavar='DIRNAME', type=str,
+        help='New name for subdirectory'
+    )
+    options = argparser.parse_args(args)
+
+    stream_name = options.stream_name
+    if ':' in stream_name:
+        stream_name, subdir = options.stream_name.split(':')
+        assert subdir == ''
+
+    stream = router[stream_name]
+    from_dir = stream['from']
+    to_dir = stream['to']
+
+    existing_subdir_a = clean_dir(os.path.join(from_dir, options.existing_subdir_name))
+    new_subdir_a = clean_dir(os.path.join(from_dir, options.new_subdir_name))
+
+    print("Renaming {} to {}".format(existing_subdir_a, new_subdir_a))
+    os.rename(existing_subdir_a, new_subdir_a)
+
+    existing_subdir_b = clean_dir(os.path.join(to_dir, options.existing_subdir_name))
+    new_subdir_b = clean_dir(os.path.join(to_dir, options.new_subdir_name))
+
+    print("Renaming {} to {}".format(existing_subdir_b, new_subdir_b))
+    os.rename(existing_subdir_b, new_subdir_b)
+
+
+# - - - - driver - - - -
+
+
 def main(args):
     argparser = ArgumentParser()
 
@@ -109,7 +147,7 @@ def main(args):
         help='JSON file containing the backup router description'
     )
     argparser.add_argument('command', metavar='COMMAND', type=str,
-        help='The action to take. One of: list, sync, syncdirs'
+        help='The action to take. One of: list, sync, syncdirs, rename'
     )
 
     options, remaining_args = argparser.parse_known_args(args)
@@ -123,6 +161,8 @@ def main(args):
         sync(router, remaining_args)
     elif options.command == 'syncdirs':
         syncdirs(router, remaining_args)
+    elif options.command == 'rename':
+        rename(router, remaining_args)
     else:
         argparser.print_usage()
         sys.exit(1)

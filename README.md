@@ -107,6 +107,25 @@ explains why there is a colon in it:
 
     ellsync router.json sync art:painting/
 
+### `rename` command
+
+Sometimes you want to rename a subdirectory somewhere under one of the backup
+streams.  It's completely fine to do this, but the next time it is synced,
+rsync will treat it as the old subdirectory being deleted, and a new subdirectory
+being created.  If there are a large number of files in the subdirectory, this
+delete-create sync can take a long time.  It's also not obvious from rsync's
+logging output that everything being deleted is also being created somewhere
+else.
+
+To ease this situation, ellsync has a `rename` command that works like so:
+
+    ellsync router.json rename art: sclupture sculpture
+
+This renames both the `/media/user/External1/art/sclupture` directory to
+`/media/user/External1/art/sculpture`, and renames the `/home/user/art/sclupture`
+directory to `/home/user/art/sculpture`.  The next time a sync is run, only the
+files that have changed in those two renamed directories will be synced.
+
 Hints and Tips
 --------------
 
@@ -136,6 +155,8 @@ start.)
 
 `sync` was split into `sync` (takes a stream) and `syncdirs` (takes to and
 from dirs).
+
+Added `rename` command.
 
 ### 0.1
 
