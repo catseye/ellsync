@@ -11,13 +11,15 @@ def clean_dir(dirname):
     return dirname
 
 
-def main(args):
+def list_(router, args):
+    for stream_name, stream in router.items():
+        if os.path.isdir(stream['from']) and os.path.isdir(stream['to']):
+            print("{}: {} => {}".format(stream_name, stream['from'], stream['to']))
 
+
+def sync(router, args):
     argparser = ArgumentParser()
-    
-    argparser.add_argument('router', metavar='ROUTER', type=str,
-        help='JSON file containing the backup router description'
-    )
+
     argparser.add_argument('from_dir', metavar='FROM_DIR', type=str,
         help='Canonical directory to sync contents from, or name of stream to use'
     )
@@ -31,21 +33,11 @@ def main(args):
     
     options = argparser.parse_args(args)
 
-    with open(options.router, 'r') as f:
-        router = json.loads(f.read())
-
     if options.to_dir is None:
         if ':' in options.from_dir:
             stream_name, subdir = options.from_dir.split(':')
         else:
-            command = options.from_dir
-            if command == 'list':
-                for stream_name, stream in router.items():
-                    if os.path.isdir(stream['from']) and os.path.isdir(stream['to']):
-                        print("{}: {} => {}".format(stream_name, stream['from'], stream['to']))
-                sys.exit(0)
-            else:
-                raise NotImplementedError("Arg must be stream:subdir or command; command must be one of: list")
+            raise NotImplementedError("Arg must be stream:subdir")
         stream = router[stream_name]
         from_dir = stream['from']
         to_dir = stream['to']
@@ -85,3 +77,27 @@ def main(args):
         sys.stdout.write(decode_line(line))
         sys.stdout.flush()
     p.wait()
+
+
+def main(args):
+    argparser = ArgumentParser()
+
+    argparser.add_argument('router', metavar='ROUTER', type=str,
+        help='JSON file containing the backup router description'
+    )
+    argparser.add_argument('command', metavar='COMMAND', type=str,
+        help='The action to take. One of: list, sync'
+    )
+
+    options, remaining_args = argparser.parse_known_args(args)
+
+    with open(options.router, 'r') as f:
+        router = json.loads(f.read())
+
+    if options.command == 'list':
+        list_(router, remaining_args)
+    elif options.command == 'sync':
+        sync(router, remaining_args)
+    else:
+        argparser.print_usage()
+        sys.exit(1)
