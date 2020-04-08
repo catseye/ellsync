@@ -121,10 +121,11 @@ To ease this situation, ellsync has a `rename` command that works like so:
 
     ellsync router.json rename art: sclupture sculpture
 
-This renames both the `/media/user/External1/art/sclupture` directory to
-`/media/user/External1/art/sculpture`, and renames the `/home/user/art/sclupture`
-directory to `/home/user/art/sculpture`.  The next time a sync is run, only the
-files that have changed in those two renamed directories will be synced.
+This renames the `/media/user/External1/art/sclupture` directory to
+`/media/user/External1/art/sculpture` and *also* renames the `/home/user/art/sclupture`
+directory to `/home/user/art/sculpture`.  If the contents of the source and
+destination directories were in sync before this rename occurred, they will
+continue to be in sync after the rename happens.
 
 Hints and Tips
 --------------

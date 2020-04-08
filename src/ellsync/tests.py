@@ -95,9 +95,9 @@ class TestEllsync(unittest.TestCase):
 
     def test_rename_not_both_subdirs_exist(self):
         check_call("mkdir -p canonical/sclupture", shell=True)
-        with self.assertRaises(OSError) as ar:
+        with self.assertRaises(ValueError) as ar:
             main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
-        self.assertIn('Errno 2', str(ar.exception))
+        self.assertIn("Directory 'cache/sclupture/' is not present", str(ar.exception))
 
 
 if __name__ == '__main__':
