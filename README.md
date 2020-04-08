@@ -5,6 +5,10 @@ _Version 0.2_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
 | _See also:_ [yastasoti](https://github.com/catseye/yastasoti)
 
+- - - -
+
+<img src="images/ellsync-logo.png?raw=true" style="float: right" />
+
 ellsync is an opinionated poka-yoke for rsync.
 
 *   **opinionated**: it was designed for a particular use case for rsync
