@@ -1,11 +1,15 @@
 ellsync
 =======
 
+_Version 0.2_
+| _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
+| _See also:_ [yastasoti](https://github.com/catseye/yastasoti)
+
 ellsync is an opinionated poka-yoke for rsync.
 
-*   opinionated: it was designed for a particular use case for rsync
+*   **opinionated**: it was designed for a particular use case for rsync
     (offline backups).
-*   poka-yoke: it exposes a restricted interface to rsync, which
+*   **poka-yoke**: it exposes a restricted interface to rsync, which
     prevents using it in dangerous ways.
 
 It also happens to provide some convenience, since the restricted
@@ -13,8 +17,15 @@ interface can be accessed by shorthand form, but the real purpose is
 to increase safety.  (I've been burned more than once using `rsync`
 incorrectly.)
 
-Quick usage guide
------------------
+Quick start
+-----------
+
+Make sure you have Python (2.7 or 3.x) installed, clone this repository,
+and put its `bin` directory on your executable search path.  You will
+then be able to run `ellsync` from your terminal.
+
+Usage guide
+-----------
 
 ### Backup router
 
@@ -109,13 +120,13 @@ explains why there is a colon in it:
 
 ### `rename` command
 
-Sometimes you want to rename a subdirectory somewhere under one of the backup
-streams.  It's completely fine to do this, but the next time it is synced,
-rsync will treat it as the old subdirectory being deleted, and a new subdirectory
-being created.  If there are a large number of files in the subdirectory, this
-delete-create sync can take a long time.  It's also not obvious from rsync's
-logging output that everything being deleted is also being created somewhere
-else.
+Sometimes you want to rename a subdirectory somewhere under the canonical of
+one of the streams.  It's completely fine to do this, but the next time it is synced,
+rsync will treat it, in the cache, as the old subdirectory being deleted and
+a new subdirectory being created.  If there are a large number of files in the
+subdirectory, this delete-and-create sync can take a long time.  It's also not
+obvious from rsync's logging output that everything being deleted is also being
+created somewhere else.
 
 To ease this situation, ellsync has a `rename` command that works like so:
 
