@@ -7,7 +7,7 @@ _Version 0.2_
 
 - - - -
 
-<img src="images/ellsync-logo.png?raw=true" style="float: right" />
+<img align="right" src="images/ellsync-logo.png?raw=true" />
 
 ellsync is an opinionated poka-yoke for rsync.
 
