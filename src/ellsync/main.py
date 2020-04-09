@@ -129,12 +129,16 @@ def rename(router, args):
 
     if not os.path.isdir(existing_subdir_a):
         raise ValueError("Directory '{}' is not present".format(existing_subdir_a))
+    if os.path.isdir(new_subdir_a):
+        raise ValueError("Directory '{}' already exists".format(new_subdir_a))
 
     existing_subdir_b = clean_dir(os.path.join(to_dir, options.existing_subdir_name))
     new_subdir_b = clean_dir(os.path.join(to_dir, options.new_subdir_name))
 
     if not os.path.isdir(existing_subdir_b):
         raise ValueError("Directory '{}' is not present".format(existing_subdir_b))
+    if os.path.isdir(new_subdir_b):
+        raise ValueError("Directory '{}' already exists".format(new_subdir_b))
 
     print("Renaming {} to {}".format(existing_subdir_a, new_subdir_a))
     os.rename(existing_subdir_a, new_subdir_a)

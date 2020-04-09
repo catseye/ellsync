@@ -98,6 +98,16 @@ class TestEllsync(unittest.TestCase):
         with self.assertRaises(ValueError) as ar:
             main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
         self.assertIn("Directory 'cache/sclupture/' is not present", str(ar.exception))
+        self.assertFalse(os.path.exists('canonical/sculpture'))
+
+    def test_rename_new_subdir_already_exists(self):
+        check_call("mkdir -p canonical/sclupture", shell=True)
+        check_call("mkdir -p canonical/sculpture", shell=True)
+        check_call("mkdir -p cache/sclupture", shell=True)
+        with self.assertRaises(ValueError) as ar:
+            main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
+        self.assertIn("Directory 'canonical/sculpture/' already exists", str(ar.exception))
+        self.assertFalse(os.path.exists('cache/sculpture'))
 
 
 if __name__ == '__main__':
