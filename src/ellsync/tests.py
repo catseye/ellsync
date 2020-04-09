@@ -33,6 +33,10 @@ class TestEllsync(unittest.TestCase):
             'basic': {
                 'from': 'canonical',
                 'to': 'cache',
+            },
+            'other': {
+                'from': 'canonical2',
+                'to': 'cache2',
             }
         }
         with open('backup.json', 'w') as f:
@@ -50,14 +54,14 @@ class TestEllsync(unittest.TestCase):
             main(['backup.json'])
 
     def test_dry_run(self):
-        main(['backup.json', 'canonical', 'cache'])
+        main(['backup.json', 'syncdirs', 'canonical', 'cache'])
         self.assertFalse(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
         self.assertEqual(output.split('\n')[0], 'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"')
         self.assertIn('DRY RUN', output)
 
     def test_apply(self):
-        main(['backup.json', 'canonical', 'cache', '--apply'])
+        main(['backup.json', 'syncdirs', 'canonical', 'cache', '--apply'])
         self.assertTrue(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
         self.assertEqual(output.split('\n')[:4], [
@@ -66,6 +70,44 @@ class TestEllsync(unittest.TestCase):
             'thing',
             ''
         ])
+
+    def test_stream(self):
+        main(['backup.json', 'sync', 'basic:', '--apply'])
+        output = sys.stdout.getvalue()
+        self.assertEqual(output.split('\n')[:4], [
+            'rsync --archive --verbose --delete "canonical/" "cache/"',
+            'sending incremental file list',
+            'thing',
+            ''
+        ])
+
+    def test_stream_not_exist(self):
+        with self.assertRaises(ValueError) as ar:
+            main(['backup.json', 'sync', 'other:', '--apply'])
+        self.assertIn("Directory 'canonical2/' is not present", str(ar.exception))
+
+    def test_rename(self):
+        check_call("mkdir -p canonical/sclupture", shell=True)
+        check_call("mkdir -p cache/sclupture", shell=True)
+        main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
+        self.assertTrue(os.path.exists('canonical/sculpture'))
+        self.assertTrue(os.path.exists('cache/sculpture'))
+
+    def test_rename_not_both_subdirs_exist(self):
+        check_call("mkdir -p canonical/sclupture", shell=True)
+        with self.assertRaises(ValueError) as ar:
+            main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
+        self.assertIn("Directory 'cache/sclupture/' is not present", str(ar.exception))
+        self.assertFalse(os.path.exists('canonical/sculpture'))
+
+    def test_rename_new_subdir_already_exists(self):
+        check_call("mkdir -p canonical/sclupture", shell=True)
+        check_call("mkdir -p canonical/sculpture", shell=True)
+        check_call("mkdir -p cache/sclupture", shell=True)
+        with self.assertRaises(ValueError) as ar:
+            main(['backup.json', 'rename', 'basic:', 'sclupture', 'sculpture'])
+        self.assertIn("Directory 'canonical/sculpture/' already exists", str(ar.exception))
+        self.assertFalse(os.path.exists('cache/sculpture'))
 
 
 if __name__ == '__main__':
