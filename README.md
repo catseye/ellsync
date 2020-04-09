@@ -1,5 +1,5 @@
-ellsync
-=======
+`ellsync`
+=========
 
 _Version 0.2_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
@@ -9,17 +9,17 @@ _Version 0.2_
 
 <img align="right" src="images/ellsync-logo.png?raw=true" />
 
-ellsync is an opinionated poka-yoke for rsync.
+**`ellsync`** is an opinionated poka-yoke for rsync.
 
-*   **opinionated**: it was designed for a particular use case for rsync
+*   [opinionated][]: it was designed for a particular use case for rsync
     (offline backups).
-*   **poka-yoke**: it exposes a restricted interface to rsync, which
+*   [poka-yoke][]: it exposes a restricted interface to rsync, which
     prevents using it in dangerous ways.
 
-It also happens to provide some convenience, since the restricted
-interface can be accessed by shorthand form, but the real purpose is
-to increase safety.  (I've been burned more than once using `rsync`
-incorrectly.)
+Because the restricted interface that `ellsync` presents can be accessed
+by shorthand form, it also happens to provide some convenience over
+using `rsync` directly — but its real purpose is to increase safety.
+(I've been burned more than once when I've made a mistake using `rsync`.)
 
 Quick start
 -----------
@@ -33,7 +33,7 @@ Usage guide
 
 ### Backup router
 
-ellsync's operation is based on a *backup router* which is a JSON file
+`ellsync`'s operation is based on a *backup router* which is a JSON file
 that looks like this:
 
     {
@@ -75,8 +75,8 @@ Note that if we try
 we will be prevented, because it is an error, because the direction of
 the backup stream is always from canonical to cache.
 
-Various other configurations are prevented.  You may have noticed that rsync
-is sensitive about whether a directory name ends in a slash or not.  ellsync
+Various other configurations are prevented.  You may have noticed that `rsync`
+is sensitive about whether a directory name ends in a slash or not.  `ellsync`
 detects when a trailing slash is missing and adds it.  Thus
 
     ellsync router.json syncdirs /media/user/External1/art /home/user/art/
@@ -93,7 +93,7 @@ trailing slashes.)
 Either the canonical or the cache (or both) may be offline storage (removable
 media), therefore neither directory is assumed to exist (it might not exist
 if the volume is not mounted.)  If either of the directories does not exist,
-ellsync will refuse to use this backup stream.  Based on this, there is a
+`ellsync` will refuse to use this backup stream.  Based on this, there is a
 subcommand to list which streams are, at the moment, backupable:
 
     ellsync router.json list
@@ -107,7 +107,7 @@ just the name of the stream, followed by a colon (more on that in a second):
     ellsync router.json sync art:
 
 Also, since the contents of the canonical and the cache normally
-have the same directory structure, ellsync allows specifying that
+have the same directory structure, `ellsync` allows specifying that
 only a subdirectory of a stream is to be synced:
 
     ellsync router.json sync /home/user/art/painting/ /media/user/External1/art/painting/
@@ -126,13 +126,13 @@ explains why there is a colon in it:
 
 Sometimes you want to rename a subdirectory somewhere under the canonical of
 one of the streams.  It's completely fine to do this, but the next time it is synced,
-rsync will treat it, in the cache, as the old subdirectory being deleted and
+`rsync` will treat it, in the cache, as the old subdirectory being deleted and
 a new subdirectory being created.  If there are a large number of files in the
 subdirectory, this delete-and-create sync can take a long time.  It's also not
-obvious from rsync's logging output that everything being deleted is also being
+obvious from `rsync`'s logging output that everything being deleted is also being
 created somewhere else.
 
-To ease this situation, ellsync has a `rename` command that works like so:
+To ease this situation, `ellsync` has a `rename` command that works like so:
 
     ellsync router.json rename art: sclupture sculpture
 
@@ -166,7 +166,7 @@ History
 
 ### 0.2
 
-Every ellsync functionality has an explicit subcommand (`list` and `sync` to
+Every `ellsync` functionality has an explicit subcommand (`list` and `sync` to
 start.)
 
 `sync` was split into `sync` (takes a stream) and `syncdirs` (takes to and
@@ -177,3 +177,6 @@ Added `rename` command.
 ### 0.1
 
 Initial release.
+
+[opinionated]: https://softwareengineering.stackexchange.com/questions/12182/what-does-opinionated-software-really-mean
+[poka-yoke]: https://en.wikipedia.org/wiki/Poka-yoke
