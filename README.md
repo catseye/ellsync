@@ -4,16 +4,17 @@
 _Version 0.2_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
 | _See also:_ [yastasoti](https://github.com/catseye/yastasoti)
+∘ [shelf](https://github.com/catseye/shelf)
 
 - - - -
 
 <img align="right" src="images/ellsync-logo.png?raw=true" />
 
-**`ellsync`** is an opinionated poka-yoke for rsync.
+**`ellsync`** is an opinionated poka-yoke for `[rsync][]`.
 
-*   [opinionated][]: it was designed for a particular use case for rsync
+*   [opinionated][]: it was designed for a particular use case for `rsync`
     (offline backups).
-*   [poka-yoke][]: it exposes a restricted interface to rsync, which
+*   [poka-yoke][]: it exposes a restricted interface to `rsync`, which
     prevents using it in dangerous ways.
 
 Because the restricted interface that `ellsync` presents can be accessed
@@ -88,6 +89,17 @@ is still interpreted as
 (but note that the directories in the router do need to have the
 trailing slashes.)
 
+Also, ince the contents of the canonical and the cache normally
+have the same directory structure, `ellsync` allows specifying that
+only a subdirectory of a stream is to be synced:
+
+    ellsync router.json syncdirs /home/user/art/painting/ /media/user/External1/art/painting/
+
+This is of course allowed only as long as it is the same subdirectory.
+This will fail:
+
+    ellsync router.json syncdirs /home/user/art/painting/ /media/user/External1/art/sculpture/
+
 ### `list` command
 
 Either the canonical or the cache (or both) may be offline storage (removable
@@ -102,23 +114,12 @@ subcommand to list which streams are, at the moment, backupable:
 
 Since each stream configuration is named in the router, we don't even have to
 give these directory names.  We can use the `sync` command where we give
-just the name of the stream, followed by a colon (more on that in a second):
+just the name of the stream, followed by a colon:
 
     ellsync router.json sync art:
 
-Also, since the contents of the canonical and the cache normally
-have the same directory structure, `ellsync` allows specifying that
-only a subdirectory of a stream is to be synced:
-
-    ellsync router.json sync /home/user/art/painting/ /media/user/External1/art/painting/
-
-This is of course allowed only as long as it is the same subdirectory.
-This will fail:
-
-    ellsync router.json sync /home/user/art/painting/ /media/user/External1/art/sculpture/
-
-And this can be combined with the short, name-the-stream syntax, and
-explains why there is a colon in it:
+The `sync` command syntax allows specifying that only a subdirectory of a
+stream is to be synced, by giving the subdirectory name after the colon:
 
     ellsync router.json sync art:painting/
 
@@ -178,5 +179,6 @@ Added `rename` command.
 
 Initial release.
 
+[rsync]: https://rsync.samba.org/
 [opinionated]: https://softwareengineering.stackexchange.com/questions/12182/what-does-opinionated-software-really-mean
 [poka-yoke]: https://en.wikipedia.org/wiki/Poka-yoke
