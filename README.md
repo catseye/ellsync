@@ -10,7 +10,7 @@ _Version 0.2_
 
 <img align="right" src="images/ellsync-logo.png?raw=true" />
 
-**`ellsync`** is an opinionated poka-yoke for `[rsync][]`.
+**`ellsync`** is an opinionated poka-yoke for [`rsync`][].
 
 *   [opinionated][]: it was designed for a particular use case for `rsync`
     (offline backups).
@@ -179,6 +179,6 @@ Added `rename` command.
 
 Initial release.
 
-[rsync]: https://rsync.samba.org/
+[`rsync`]: https://rsync.samba.org/
 [opinionated]: https://softwareengineering.stackexchange.com/questions/12182/what-does-opinionated-software-really-mean
 [poka-yoke]: https://en.wikipedia.org/wiki/Poka-yoke
