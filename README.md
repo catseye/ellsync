@@ -3,9 +3,9 @@
 
 _Version 0.2_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
-| _See also:_ [yastasoti](https://github.com/catseye/yastasoti)
-∘ [tagfarm](https://github.com/catseye/tagfarm)
-∘ [shelf](https://github.com/catseye/shelf)
+| _See also:_ [yastasoti](https://github.com/catseye/yastasoti#readme)
+∘ [tagfarm](https://github.com/catseye/tagfarm#readme)
+∘ [shelf](https://github.com/catseye/shelf#readme)
 
 - - - -
 
