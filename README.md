@@ -154,14 +154,27 @@ want to establish an alias like
 
 (or whatever.)
 
-Notes
------
+TODO
+----
 
-If `rsync` encounters an error, it will abort, having only partially completed.
-In particular, if it encounters a directory which it cannot read, because it
-is for example owned by another user and not world-readable, it will abort.
-`ellsync` does not currently detect this properly (if it is detectable (I hope
-that it is!))
+*   If `rsync` encounters an error, it will abort, having only partially completed.
+    In particular, if it encounters a directory which it cannot read, because it
+    is for example owned by another user and not world-readable, it will abort.
+    `ellsync` does not currently detect this properly.  It should be made to handle
+    it gracefully, if possible.
+*   On external media, a file may become corrupted; `rsync` will not detect this
+    by default.  My theory is that this is because the timestamp matches, so it
+    doesn't check the contents.  See if there is an option to `rsync` to ignore
+    the timestamp, or otherwise work around the timestamp issue.  One option might
+    be to run `diff` on every pair of files, and invalidate the timestamp on any
+    files that do differ.
+*   On external media on my OS, sometimes the sync is very fast, but the subsequent
+    unmount/"writing data to device, do not remove" phase takes a very long time.
+    See if there is a way to call `fsync` on the files updated by `rsync` so that
+    the delay happens at sync time.
+*   Tab-completion of stream names.
+*   (Aspirational) Ability to convert the backup router to a `dot` file (`graphviz`)
+    so that the relationships between the streams can be easily visualized.
 
 History
 -------
