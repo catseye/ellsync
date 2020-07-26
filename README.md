@@ -179,6 +179,11 @@ TODO
 History
 -------
 
+### 0.3
+
+Argument parser was refactored to use subparsers, improving usage info and usage
+error output.
+
 ### 0.2
 
 Every `ellsync` functionality has an explicit subcommand (`list` and `sync` to
