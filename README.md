@@ -168,10 +168,6 @@ TODO
     the timestamp, or otherwise work around the timestamp issue.  One option might
     be to run `diff` on every pair of files, and invalidate the timestamp on any
     files that do differ.
-*   On external media on my OS, sometimes the sync is very fast, but the subsequent
-    unmount/"writing data to device, do not remove" phase takes a very long time.
-    See if there is a way to call `fsync` on the files updated by `rsync` so that
-    the delay happens at sync time.
 *   Tab-completion of stream names.
 *   (Aspirational) Ability to convert the backup router to a `dot` file (`graphviz`)
     so that the relationships between the streams can be easily visualized.
@@ -183,6 +179,11 @@ History
 
 Argument parser was refactored to use subparsers, improving usage info and usage
 error output.
+
+After `sync` is performed, the system `sync` command is run, to ensure all buffers
+are flushed to devices before the `ellsync` tool actually exits.
+
+Added `deepcheck` command.
 
 ### 0.2
 

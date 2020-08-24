@@ -21,6 +21,8 @@ def perform_sync(from_dir, to_dir, dry_run=True):
     rsync_options = '--dry-run ' if dry_run else ''
     cmd = 'rsync {}--archive --verbose --delete "{}" "{}"'.format(rsync_options, from_dir, to_dir)
     run_command(cmd)
+    if not dry_run:
+        run_command('sync')
 
 
 def run_command(cmd):
