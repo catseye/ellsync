@@ -20,6 +20,10 @@ def perform_sync(from_dir, to_dir, dry_run=True):
             raise ValueError("Directory '{}' is not present".format(d))
     rsync_options = '--dry-run ' if dry_run else ''
     cmd = 'rsync {}--archive --verbose --delete "{}" "{}"'.format(rsync_options, from_dir, to_dir)
+    run_command(cmd)
+
+
+def run_command(cmd):
     sys.stdout.write(cmd + '\n')
     try:
         p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
@@ -112,6 +116,19 @@ def rename(router, options):
     os.rename(existing_subdir_b, new_subdir_b)
 
 
+def deepcheck(router, options):
+    stream_name = options.stream_name
+
+    stream = router[stream_name]
+    from_dir = stream['from']
+    to_dir = stream['to']
+
+    cmd = 'diff -ruq "{}" "{}"'.format(from_dir, to_dir)
+    run_command(cmd)
+
+    # TODO: run `touch --date "1970-01-01"` on all files downstream where there were differences
+
+
 # - - - - driver - - - -
 
 
@@ -167,6 +184,15 @@ def main(args):
         help='New name for subdirectory'
     )
     parser_rename.set_defaults(func=rename)
+
+    # - - - - deepcheck - - - -
+    parser_deepcheck = subparsers.add_parser(
+        'deepcheck', help='Report files that are not byte-for-byte identical'
+    )
+    parser_deepcheck.add_argument('stream_name', metavar='STREAM', type=str,
+        help='Name of stream to operate under'
+    )
+    parser_deepcheck.set_defaults(func=deepcheck)
 
     options = argparser.parse_args(args)
     with open(options.router, 'r') as f:
