@@ -195,6 +195,8 @@ from dirs).
 
 Added `rename` command.
 
+Added `--stream-name-only` option to `list` command.
+
 ### 0.1
 
 Initial release.

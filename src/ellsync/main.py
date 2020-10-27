@@ -47,7 +47,10 @@ def run_command(cmd):
 def list_(router, options):
     for stream_name, stream in router.items():
         if os.path.isdir(stream['from']) and os.path.isdir(stream['to']):
-            print("{}: {} => {}".format(stream_name, stream['from'], stream['to']))
+            if options.stream_name_only:
+                print(stream_name)
+            else:
+                print("{}: {} => {}".format(stream_name, stream['from'], stream['to']))
 
 
 def sync(router, options):
@@ -146,6 +149,9 @@ def main(args):
 
     # - - - - list - - - -
     parser_list = subparsers.add_parser('list', help='List available sync streams')
+    parser_list.add_argument('--stream-name-only', default=False, action='store_true',
+        help='Output only the names of the available streams'
+    )
     parser_list.set_defaults(func=list_)
 
     # - - - - sync - - - -
