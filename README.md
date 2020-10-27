@@ -1,7 +1,7 @@
 `ellsync`
 =========
 
-_Version 0.2_
+_Version 0.3_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
 | _See also:_ [yastasoti](https://github.com/catseye/yastasoti#readme)
 ∘ [tagfarm](https://github.com/catseye/tagfarm#readme)
@@ -178,9 +178,10 @@ TODO
     `ellsync` does not currently detect this properly.  It should be made to handle
     it gracefully, if possible.
 *   Tab-completion of stream names.
+*   Better test case for `--thorough`.
+*   When executing system commands, don't use shell expansion.
 *   (Aspirational) Ability to convert the backup router to a `dot` file (`graphviz`)
     so that the relationships between the streams can be easily visualized.
-*   Better test case for `--thorough`.
 
 History
 -------

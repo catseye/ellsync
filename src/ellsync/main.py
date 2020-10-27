@@ -139,8 +139,6 @@ def deepcheck(router, options):
     cmd = 'diff -ruq "{}" "{}"'.format(from_dir, to_dir)
     run_command(cmd)
 
-    # TODO: run `touch --date "1970-01-01"` on all files downstream where there were differences
-
 
 # - - - - driver - - - -
 
