@@ -68,6 +68,10 @@ def sync(router, options):
     from_dir = clean_dir(from_dir)
     to_dir = clean_dir(to_dir)
 
+    if options.thorough and options.apply:
+        cmd = 'find "{}" -exec touch --date "1970-01-01" {} \;'.format(to_dir, '{}')
+        run_command(cmd)
+
     perform_sync(from_dir, to_dir, dry_run=(not options.apply))
 
 
@@ -85,6 +89,10 @@ def syncdirs(router, options):
             break
     if selected_stream_name is None:
         raise ValueError("Stream {} => {} was not found in router".format(from_dir, to_dir))
+
+    if options.thorough and options.apply:
+        cmd = 'find "{}" -exec touch --date "1970-01-01" {} \;'.format(to_dir, '{}')
+        run_command(cmd)
 
     perform_sync(from_dir, to_dir, dry_run=(not options.apply))
 
@@ -162,6 +170,9 @@ def main(args):
     parser_sync.add_argument('--apply', default=False, action='store_true',
         help='Actually run the rsync command'
     )
+    parser_sync.add_argument('--thorough', default=False, action='store_true',
+        help='Invalidate the timestamp on all destination files, to ensure content is synced'
+    )
     parser_sync.set_defaults(func=sync)
 
     # - - - - syncdirs - - - -
@@ -176,6 +187,9 @@ def main(args):
     )
     parser_syncdirs.add_argument('--apply', default=False, action='store_true',
         help='Actually run the rsync command'
+    )
+    parser_syncdirs.add_argument('--thorough', default=False, action='store_true',
+        help='Invalidate the timestamp on all destination files, to ensure content is synced'
     )
     parser_syncdirs.set_defaults(func=syncdirs)
 

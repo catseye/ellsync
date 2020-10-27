@@ -101,6 +101,19 @@ This will fail:
 
     ellsync router.json syncdirs /home/user/art/painting/ /media/user/External1/art/sculpture/
 
+By default, `rsync` does not attempt to sync the contents of an existing file
+if the destination file has a same-or-newer timestamp as the source file.
+
+However, this means that if the destination file has become corrupted (a not-
+uncommon occurrence on inexpensive removable media), `rsync` will not attempt
+to repair the corruption, as the timestamp of the corrupted file did not change.
+
+To compensate for this, `ellsync` provides the `--thorough` flag.  This
+changes the timestamps of all the files in the destination to January 1st, 1970.
+This will cause `rsync` to actually check the contents of each file and actually
+sync any needed changes.  The timestamp will be set to the timestamp of the
+source file as part of the this sync.
+
 ### `list` command
 
 Either the canonical or the cache (or both) may be offline storage (removable
@@ -123,6 +136,8 @@ The `sync` command syntax allows specifying that only a subdirectory of a
 stream is to be synced, by giving the subdirectory name after the colon:
 
     ellsync router.json sync art:painting/
+
+Like `syncdirs`, `sync` understands the `--apply` and `--thorough` options.
 
 ### `rename` command
 
@@ -162,15 +177,10 @@ TODO
     is for example owned by another user and not world-readable, it will abort.
     `ellsync` does not currently detect this properly.  It should be made to handle
     it gracefully, if possible.
-*   On external media, a file may become corrupted; `rsync` will not detect this
-    by default.  My theory is that this is because the timestamp matches, so it
-    doesn't check the contents.  See if there is an option to `rsync` to ignore
-    the timestamp, or otherwise work around the timestamp issue.  One option might
-    be to run `diff` on every pair of files, and invalidate the timestamp on any
-    files that do differ.
 *   Tab-completion of stream names.
 *   (Aspirational) Ability to convert the backup router to a `dot` file (`graphviz`)
     so that the relationships between the streams can be easily visualized.
+*   Better test case for `--thorough`.
 
 History
 -------
@@ -183,7 +193,12 @@ error output.
 After `sync` is performed, the system `sync` command is run, to ensure all buffers
 are flushed to devices before the `ellsync` tool actually exits.
 
-Added `deepcheck` command.
+Added `deepcheck` command.  This exists mostly for investigative purposes; the
+`--thorough` flag is likely the better choice for practical use.
+
+Added `--stream-name-only` option to `list` command.
+
+Added `--thorough` to `sync` and `syncdirs` commands.
 
 ### 0.2
 
@@ -194,8 +209,6 @@ start.)
 from dirs).
 
 Added `rename` command.
-
-Added `--stream-name-only` option to `list` command.
 
 ### 0.1
 
