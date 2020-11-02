@@ -132,9 +132,19 @@ def rename(router, options):
 def deepcheck(router, options):
     stream_name = options.stream_name
 
+    if ':' in options.stream_name:
+        stream_name, subdir = options.stream_name.split(':')
+    else:
+        stream_name = options.stream_name
+        subdir = None
+
     stream = router[stream_name]
     from_dir = stream['from']
     to_dir = stream['to']
+
+    if subdir:
+        from_dir = os.path.join(from_dir, subdir)
+        to_dir = os.path.join(to_dir, subdir)
 
     cmd = 'diff -ruq "{}" "{}"'.format(from_dir, to_dir)
     run_command(cmd)
