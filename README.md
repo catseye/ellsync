@@ -61,7 +61,7 @@ With the above router saved as `router.json` we can then say
 
 and this will in effect run
 
-    rsync --archive --verbose --delete --dry-run /home/user/art/ /media/user/External1/art/
+    rsync --archive --verbose --delete --checksum --dry-run /home/user/art/ /media/user/External1/art/
 
 Note that by default it only runs a `--dry-run`.  It's a good practice to
 do a dry run first, to see what will be changed.  As a bonus, the files
@@ -85,7 +85,7 @@ detects when a trailing slash is missing and adds it.  Thus
 
 is still interpreted as
 
-    rsync --archive --verbose --delete /home/user/art/ /media/user/External1/art/
+    rsync --archive --verbose --delete --checksum --dry-run /home/user/art/ /media/user/External1/art/
 
 (but note that the directories in the router do need to have the
 trailing slashes.)
@@ -108,11 +108,8 @@ However, this means that if the destination file has become corrupted (a not-
 uncommon occurrence on inexpensive removable media), `rsync` will not attempt
 to repair the corruption, as the timestamp of the corrupted file did not change.
 
-To compensate for this, `ellsync` provides the `--thorough` flag.  This
-changes the timestamps of all the files in the destination to January 1st, 1970.
-This will cause `rsync` to actually check the contents of each file and actually
-sync any needed changes.  The timestamp will be set to the timestamp of the
-source file as part of the this sync.
+To compensate for this, `ellsync` invokes `rsync` with the `--checksum` flag, to
+force it to do a thorough check of the files.  See `man rsync` for more details.
 
 ### `list` command
 
@@ -199,7 +196,8 @@ Added `deepcheck` command.  This exists mostly for investigative purposes; the
 
 Added `--stream-name-only` option to `list` command.
 
-Added `--thorough` to `sync` and `syncdirs` commands.
+`rsync` is now invoked with `--checksum` flag to cause it to thoroughly check if
+files differ, even if their datestamps have not changed.
 
 ### 0.2
 
