@@ -191,13 +191,10 @@ error output.
 After `sync` is performed, the system `sync` command is run, to ensure all buffers
 are flushed to devices before the `ellsync` tool actually exits.
 
-Added `deepcheck` command.  This exists mostly for investigative purposes; the
-`--thorough` flag is likely the better choice for practical use.
-
-Added `--stream-name-only` option to `list` command.
-
 `rsync` is now invoked with `--checksum` flag to cause it to thoroughly check if
 files differ, even if their datestamps have not changed.
+
+Added `--stream-name-only` option to `list` command.
 
 ### 0.2
 

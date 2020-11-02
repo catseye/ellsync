@@ -121,27 +121,6 @@ def rename(router, options):
     os.rename(existing_subdir_b, new_subdir_b)
 
 
-def deepcheck(router, options):
-    stream_name = options.stream_name
-
-    if ':' in options.stream_name:
-        stream_name, subdir = options.stream_name.split(':')
-    else:
-        stream_name = options.stream_name
-        subdir = None
-
-    stream = router[stream_name]
-    from_dir = stream['from']
-    to_dir = stream['to']
-
-    if subdir:
-        from_dir = os.path.join(from_dir, subdir)
-        to_dir = os.path.join(to_dir, subdir)
-
-    cmd = 'diff -ruq "{}" "{}"'.format(from_dir, to_dir)
-    run_command(cmd)
-
-
 # - - - - driver - - - -
 
 
@@ -201,15 +180,6 @@ def main(args):
         help='New name for subdirectory'
     )
     parser_rename.set_defaults(func=rename)
-
-    # - - - - deepcheck - - - -
-    parser_deepcheck = subparsers.add_parser(
-        'deepcheck', help='Report files that are not byte-for-byte identical'
-    )
-    parser_deepcheck.add_argument('stream_name', metavar='STREAM', type=str,
-        help='Name of stream to operate under'
-    )
-    parser_deepcheck.set_defaults(func=deepcheck)
 
     options = argparser.parse_args(args)
     with open(options.router, 'r') as f:
