@@ -14,12 +14,13 @@ def clean_dir(dirname):
     return dirname
 
 
-def perform_sync(from_dir, to_dir, dry_run=True):
+def perform_sync(from_dir, to_dir, dry_run=True, checksum=False):
     for d in (from_dir, to_dir):
         if not os.path.isdir(d):
             raise ValueError("Directory '{}' is not present".format(d))
-    rsync_options = '--dry-run ' if dry_run else ''
-    cmd = 'rsync {}--archive --verbose --delete --checksum "{}" "{}"'.format(rsync_options, from_dir, to_dir)
+    dry_run_option = '--dry-run ' if dry_run else ''
+    checksum_option = '--checksum ' if checksum else ''
+    cmd = 'rsync {}{}--archive --verbose --delete "{}" "{}"'.format(dry_run_option, checksum_option, from_dir, to_dir)
     run_command(cmd)
     if not dry_run:
         run_command('sync')
@@ -68,7 +69,7 @@ def sync(router, options):
     from_dir = clean_dir(from_dir)
     to_dir = clean_dir(to_dir)
 
-    perform_sync(from_dir, to_dir, dry_run=(not options.apply))
+    perform_sync(from_dir, to_dir, dry_run=(not options.apply), checksum=(options.thorough))
 
 
 def syncdirs(router, options):
@@ -148,6 +149,9 @@ def main(args):
     )
     parser_sync.add_argument('--apply', default=False, action='store_true',
         help='Actually run the rsync command'
+    )
+    parser_sync.add_argument('--thorough', default=False, action='store_true',
+        help='Ignore the timestamp on all destination files, to ensure content is synced'
     )
     parser_sync.set_defaults(func=sync)
 
