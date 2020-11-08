@@ -72,24 +72,6 @@ def sync(router, options):
     perform_sync(from_dir, to_dir, dry_run=(not options.apply), checksum=(options.thorough))
 
 
-def syncdirs(router, options):
-    from_dir = clean_dir(options.from_dir)
-    to_dir = clean_dir(options.to_dir)
-    selected_stream_name = None
-    for stream_name, stream in router.items():
-        if from_dir.startswith(stream['from']) and to_dir.startswith(stream['to']):
-            from_suffix = from_dir[len(stream['from']):]
-            to_suffix = to_dir[len(stream['to']):]
-            if from_suffix != to_suffix:
-                raise ValueError( (from_suffix, to_suffix) )
-            selected_stream_name = stream_name
-            break
-    if selected_stream_name is None:
-        raise ValueError("Stream {} => {} was not found in router".format(from_dir, to_dir))
-
-    perform_sync(from_dir, to_dir, dry_run=(not options.apply))
-
-
 def rename(router, options):
     stream_name = options.stream_name
     if ':' in stream_name:
@@ -154,21 +136,6 @@ def main(args):
         help='Ignore the timestamp on all destination files, to ensure content is synced'
     )
     parser_sync.set_defaults(func=sync)
-
-    # - - - - syncdirs - - - -
-    parser_syncdirs = subparsers.add_parser(
-        'syncdirs', help='Sync contents across a sync stream specified by source and dest directories'
-    )
-    parser_syncdirs.add_argument('from_dir', metavar='FROM_DIR', type=str,
-        help='Canonical directory to sync contents from'
-    )
-    parser_syncdirs.add_argument('to_dir', metavar='TO_DIR', type=str,
-        help='Cache directory to sync contents to'
-    )
-    parser_syncdirs.add_argument('--apply', default=False, action='store_true',
-        help='Actually run the rsync command'
-    )
-    parser_syncdirs.set_defaults(func=syncdirs)
 
     # - - - - rename - - - -
     parser_rename = subparsers.add_parser(
