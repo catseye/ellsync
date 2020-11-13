@@ -14,18 +14,6 @@ def clean_dir(dirname):
     return dirname
 
 
-def perform_sync(from_dir, to_dir, dry_run=True, checksum=False):
-    for d in (from_dir, to_dir):
-        if not os.path.isdir(d):
-            raise ValueError("Directory '{}' is not present".format(d))
-    dry_run_option = '--dry-run ' if dry_run else ''
-    checksum_option = '--checksum ' if checksum else ''
-    cmd = 'rsync {}{}--archive --verbose --delete "{}" "{}"'.format(dry_run_option, checksum_option, from_dir, to_dir)
-    run_command(cmd)
-    if not dry_run:
-        run_command('sync')
-
-
 def run_command(cmd):
     sys.stdout.write(cmd + '\n')
     try:
@@ -69,7 +57,17 @@ def sync(router, options):
     from_dir = clean_dir(from_dir)
     to_dir = clean_dir(to_dir)
 
-    perform_sync(from_dir, to_dir, dry_run=(not options.apply), checksum=(options.thorough))
+    for d in (from_dir, to_dir):
+        if not os.path.isdir(d):
+            raise ValueError("Directory '{}' is not present".format(d))
+
+    dry_run = not options.apply
+    dry_run_option = '--dry-run ' if dry_run else ''
+    checksum_option = '--checksum ' if options.thorough else ''
+    cmd = 'rsync {}{}--archive --verbose --delete "{}" "{}"'.format(dry_run_option, checksum_option, from_dir, to_dir)
+    run_command(cmd)
+    if not dry_run:
+        run_command('sync')
 
 
 def rename(router, options):
