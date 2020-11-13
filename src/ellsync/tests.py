@@ -53,26 +53,16 @@ class TestEllsync(unittest.TestCase):
         with self.assertRaises(SystemExit):
             main(['backup.json'])
 
-    def test_dry_run(self):
-        main(['backup.json', 'syncdirs', 'canonical', 'cache'])
+    def test_sync_dry_run(self):
+        main(['backup.json', 'sync', 'basic:'])
         self.assertFalse(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
         self.assertEqual(output.split('\n')[0], 'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"')
         self.assertIn('DRY RUN', output)
 
-    def test_apply(self):
-        main(['backup.json', 'syncdirs', 'canonical', 'cache', '--apply'])
-        self.assertTrue(os.path.exists('cache/thing'))
-        output = sys.stdout.getvalue()
-        self.assertEqual(output.split('\n')[:4], [
-            'rsync --archive --verbose --delete "canonical/" "cache/"',
-            'sending incremental file list',
-            'thing',
-            ''
-        ])
-
-    def test_stream(self):
+    def test_sync_apply(self):
         main(['backup.json', 'sync', 'basic:', '--apply'])
+        self.assertTrue(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
         self.assertEqual(output.split('\n')[:4], [
             'rsync --archive --verbose --delete "canonical/" "cache/"',

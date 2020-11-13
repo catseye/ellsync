@@ -14,12 +14,7 @@ def clean_dir(dirname):
     return dirname
 
 
-def perform_sync(from_dir, to_dir, dry_run=True):
-    for d in (from_dir, to_dir):
-        if not os.path.isdir(d):
-            raise ValueError("Directory '{}' is not present".format(d))
-    rsync_options = '--dry-run ' if dry_run else ''
-    cmd = 'rsync {}--archive --verbose --delete "{}" "{}"'.format(rsync_options, from_dir, to_dir)
+def run_command(cmd):
     sys.stdout.write(cmd + '\n')
     try:
         p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
@@ -38,22 +33,16 @@ def perform_sync(from_dir, to_dir, dry_run=True):
 # - - - - commands - - - -
 
 
-def list_(router, args):
+def list_(router, options):
     for stream_name, stream in router.items():
         if os.path.isdir(stream['from']) and os.path.isdir(stream['to']):
-            print("{}: {} => {}".format(stream_name, stream['from'], stream['to']))
+            if options.stream_name_only:
+                print(stream_name)
+            else:
+                print("{}: {} => {}".format(stream_name, stream['from'], stream['to']))
 
 
-def sync(router, args):
-    argparser = ArgumentParser()
-    argparser.add_argument('stream_name', metavar='STREAM', type=str,
-        help='Name of stream (or stream:subdirectory) to sync contents across'
-    )
-    argparser.add_argument('--apply', default=False, action='store_true',
-        help='Actually run the rsync command'
-    )
-    options = argparser.parse_args(args)
-
+def sync(router, options):
     if ':' in options.stream_name:
         stream_name, subdir = options.stream_name.split(':')
     else:
@@ -68,53 +57,20 @@ def sync(router, args):
     from_dir = clean_dir(from_dir)
     to_dir = clean_dir(to_dir)
 
-    perform_sync(from_dir, to_dir, dry_run=(not options.apply))
+    for d in (from_dir, to_dir):
+        if not os.path.isdir(d):
+            raise ValueError("Directory '{}' is not present".format(d))
+
+    dry_run = not options.apply
+    dry_run_option = '--dry-run ' if dry_run else ''
+    checksum_option = '--checksum ' if options.thorough else ''
+    cmd = 'rsync {}{}--archive --verbose --delete "{}" "{}"'.format(dry_run_option, checksum_option, from_dir, to_dir)
+    run_command(cmd)
+    if not dry_run:
+        run_command('sync')
 
 
-def syncdirs(router, args):
-    argparser = ArgumentParser()
-    argparser.add_argument('from_dir', metavar='FROM_DIR', type=str,
-        help='Canonical directory to sync contents from, or name of stream to use'
-    )
-    argparser.add_argument('to_dir', metavar='TO_DIR', nargs='?', default=None, type=str,
-        help='Cache directory to sync contents to (only required when canonical dir, '
-        'not stream, was specified)'
-    )
-    argparser.add_argument('--apply', default=False, action='store_true',
-        help='Actually run the rsync command'
-    )
-    options = argparser.parse_args(args)
-
-    from_dir = clean_dir(options.from_dir)
-    to_dir = clean_dir(options.to_dir)
-    selected_stream_name = None
-    for stream_name, stream in router.items():
-        if from_dir.startswith(stream['from']) and to_dir.startswith(stream['to']):
-            from_suffix = from_dir[len(stream['from']):]
-            to_suffix = to_dir[len(stream['to']):]
-            if from_suffix != to_suffix:
-                raise ValueError( (from_suffix, to_suffix) )
-            selected_stream_name = stream_name
-            break
-    if selected_stream_name is None:
-        raise ValueError("Stream {} => {} was not found in router".format(from_dir, to_dir))
-
-    perform_sync(from_dir, to_dir, dry_run=(not options.apply))
-
-
-def rename(router, args):
-    argparser = ArgumentParser()
-    argparser.add_argument('stream_name', metavar='STREAM', type=str,
-        help='Name of stream to operate under'
-    )
-    argparser.add_argument('existing_subdir_name', metavar='DIRNAME', type=str,
-        help='Existing subdirectory to be renamed'
-    )
-    argparser.add_argument('new_subdir_name', metavar='DIRNAME', type=str,
-        help='New name for subdirectory'
-    )
-    options = argparser.parse_args(args)
-
+def rename(router, options):
     stream_name = options.stream_name
     if ':' in stream_name:
         stream_name, subdir = options.stream_name.split(':')
@@ -155,23 +111,51 @@ def main(args):
     argparser.add_argument('router', metavar='ROUTER', type=str,
         help='JSON file containing the backup router description'
     )
-    argparser.add_argument('command', metavar='COMMAND', type=str,
-        help='The action to take. One of: list, sync, syncdirs, rename'
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.3")
+
+    subparsers = argparser.add_subparsers()
+
+    # - - - - list - - - -
+    parser_list = subparsers.add_parser('list', help='List available sync streams')
+    parser_list.add_argument('--stream-name-only', default=False, action='store_true',
+        help='Output only the names of the available streams'
     )
+    parser_list.set_defaults(func=list_)
 
-    options, remaining_args = argparser.parse_known_args(args)
+    # - - - - sync - - - -
+    parser_sync = subparsers.add_parser('sync', help='Sync contents across a sync stream specified by name')
+    parser_sync.add_argument('stream_name', metavar='STREAM', type=str,
+        help='Name of stream (or stream:subdirectory) to sync contents across'
+    )
+    parser_sync.add_argument('--apply', default=False, action='store_true',
+        help='Actually run the rsync command'
+    )
+    parser_sync.add_argument('--thorough', default=False, action='store_true',
+        help='Ignore the timestamp on all destination files, to ensure content is synced'
+    )
+    parser_sync.set_defaults(func=sync)
 
+    # - - - - rename - - - -
+    parser_rename = subparsers.add_parser(
+        'rename', help='Rename a subdirectory in both source and dest of sync stream'
+    )
+    parser_rename.add_argument('stream_name', metavar='STREAM', type=str,
+        help='Name of stream to operate under'
+    )
+    parser_rename.add_argument('existing_subdir_name', metavar='DIRNAME', type=str,
+        help='Existing subdirectory to be renamed'
+    )
+    parser_rename.add_argument('new_subdir_name', metavar='DIRNAME', type=str,
+        help='New name for subdirectory'
+    )
+    parser_rename.set_defaults(func=rename)
+
+    options = argparser.parse_args(args)
     with open(options.router, 'r') as f:
         router = json.loads(f.read())
-
-    if options.command == 'list':
-        list_(router, remaining_args)
-    elif options.command == 'sync':
-        sync(router, remaining_args)
-    elif options.command == 'syncdirs':
-        syncdirs(router, remaining_args)
-    elif options.command == 'rename':
-        rename(router, remaining_args)
-    else:
+    try:
+        func = options.func
+    except AttributeError:
         argparser.print_usage()
         sys.exit(1)
+    func(router, options)

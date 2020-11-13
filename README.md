@@ -1,7 +1,7 @@
 `ellsync`
 =========
 
-_Version 0.2_
+_Version 0.3_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
 | _See also:_ [yastasoti](https://github.com/catseye/yastasoti#readme)
 ∘ [tagfarm](https://github.com/catseye/tagfarm#readme)
@@ -53,11 +53,11 @@ The idea is that all changes to the contents of the canonical directory
 are bona fide changes, but any change to the contents of the cache can be
 discarded.
 
-### `syncdirs` command
+### `sync` command
 
 With the above router saved as `router.json` we can then say
 
-    ellsync router.json syncdirs /home/user/art/ /media/user/External1/art/
+    ellsync router.json sync art:
 
 and this will in effect run
 
@@ -68,38 +68,37 @@ do a dry run first, to see what will be changed.  As a bonus, the files
 involved will often remain in the filesystem cache, meaning a subsequent
 actual run will go quite quickly.  To do that actual run, use `--apply`:
 
-    ellsync router.json syncdirs /home/user/art/ /media/user/External1/art/ --apply
+    ellsync router.json sync art: --apply
 
-Note that if we try
-
-    ellsync router.json syncdirs /media/user/External1/art/ /home/user/art/
-
-we will be prevented, because it is an error, because the direction of
-the backup stream is always from canonical to cache.
-
-Various other configurations are prevented.  You may have noticed that `rsync`
-is sensitive about whether a directory name ends in a slash or not.  `ellsync`
-detects when a trailing slash is missing and adds it.  Thus
-
-    ellsync router.json syncdirs /media/user/External1/art /home/user/art/
-
-is still interpreted as
-
-    rsync --archive --verbose --delete /home/user/art/ /media/user/External1/art/
-
-(but note that the directories in the router do need to have the
-trailing slashes.)
-
-Also, ince the contents of the canonical and the cache normally
+Note that, since the contents of the canonical and the cache normally
 have the same directory structure, `ellsync` allows specifying that
 only a subdirectory of a stream is to be synced:
 
-    ellsync router.json syncdirs /home/user/art/painting/ /media/user/External1/art/painting/
+    ellsync router.json sync art:painting/oil/ --apply
 
-This is of course allowed only as long as it is the same subdirectory.
-This will fail:
+While `rsync` is sensitive about whether a directory name ends in a slash or
+not,  `ellsync` detects when a trailing slash is missing and adds it.  Thus
 
-    ellsync router.json syncdirs /home/user/art/painting/ /media/user/External1/art/sculpture/
+    ellsync router.json sync art:painting/oil --apply
+
+will work as well as the above.  (But note that the directories specified
+in the router *do* need to have the trailing slashes.)
+
+#### --thorough
+
+By default, `rsync` does not attempt to sync the contents of an existing file
+if the destination file has a same-or-newer timestamp as the source file.
+
+However, this means that if the destination file has become corrupted (a not-
+uncommon occurrence on inexpensive removable media), `rsync` will not attempt
+to repair the corruption, as the timestamp of the corrupted file did not change.
+
+To compensate for this, `ellsync` provides the `--thorough` option:
+
+    ellsync router.json sync art:painting/oil --thorough
+
+This invokes `rsync` with the `--checksum` flag, to force it to do a thorough
+check of the files.  See `man rsync` for more details.
 
 ### `list` command
 
@@ -110,19 +109,6 @@ if the volume is not mounted.)  If either of the directories does not exist,
 subcommand to list which streams are, at the moment, backupable:
 
     ellsync router.json list
-
-### `sync` command
-
-Since each stream configuration is named in the router, we don't even have to
-give these directory names.  We can use the `sync` command where we give
-just the name of the stream, followed by a colon:
-
-    ellsync router.json sync art:
-
-The `sync` command syntax allows specifying that only a subdirectory of a
-stream is to be synced, by giving the subdirectory name after the colon:
-
-    ellsync router.json sync art:painting/
 
 ### `rename` command
 
@@ -154,17 +140,37 @@ want to establish an alias like
 
 (or whatever.)
 
-Notes
------
+TODO
+----
 
-If `rsync` encounters an error, it will abort, having only partially completed.
-In particular, if it encounters a directory which it cannot read, because it
-is for example owned by another user and not world-readable, it will abort.
-`ellsync` does not currently detect this properly (if it is detectable (I hope
-that it is!))
+*   If `rsync` encounters an error, it will abort, having only partially completed.
+    In particular, if it encounters a directory which it cannot read, because it
+    is for example owned by another user and not world-readable, it will abort.
+    `ellsync` does not currently detect this properly.  It should be made to handle
+    it gracefully, if possible.
+*   Tab-completion of stream names.
+*   Better test case for `--thorough`.
+*   When executing system commands, don't use shell expansion.
+*   (Aspirational) Ability to convert the backup router to a `dot` file (`graphviz`)
+    so that the relationships between the streams can be easily visualized.
 
 History
 -------
+
+### 0.3
+
+Argument parser was refactored to use subparsers, improving usage info and usage
+error output.
+
+Removed `syncdirs` as it introduces some redundancy and I never use it.
+
+After `sync` is performed, the system `sync` command is run, to ensure all buffers
+are flushed to devices before the `ellsync` tool actually exits.
+
+The `--thorough` options now invokes `rsync` with `--checksum` flag, to cause it
+to thoroughly check if files differ, even if their datestamps have not changed.
+
+Added `--stream-name-only` option to `list` command.
 
 ### 0.2
 
