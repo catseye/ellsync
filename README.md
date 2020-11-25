@@ -1,7 +1,7 @@
 `ellsync`
 =========
 
-_Version 0.3_
+_Version 0.4_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
 | _See also:_ [yastasoti](https://github.com/catseye/yastasoti#readme)
 ∘ [tagfarm](https://github.com/catseye/tagfarm#readme)
@@ -156,6 +156,10 @@ TODO
 
 History
 -------
+
+### 0.4
+
+...
 
 ### 0.3
 

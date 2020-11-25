@@ -111,7 +111,7 @@ def main(args):
     argparser.add_argument('router', metavar='ROUTER', type=str,
         help='JSON file containing the backup router description'
     )
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.3")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.4")
 
     subparsers = argparser.add_subparsers()
 
