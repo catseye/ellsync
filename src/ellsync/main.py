@@ -46,7 +46,8 @@ def sync(router, options):
     if ':' in options.stream_name:
         stream_name, subdir = options.stream_name.split(':')
     else:
-        raise NotImplementedError("Arg must be stream:subdir")
+        stream_name = options.stream_name
+        subdir = None
     stream = router[stream_name]
     from_dir = stream['from']
     to_dir = stream['to']

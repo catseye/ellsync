@@ -57,7 +57,7 @@ discarded.
 
 With the above router saved as `router.json` we can then say
 
-    ellsync router.json sync art:
+    ellsync router.json sync art
 
 and this will in effect run
 
@@ -68,7 +68,7 @@ do a dry run first, to see what will be changed.  As a bonus, the files
 involved will often remain in the filesystem cache, meaning a subsequent
 actual run will go quite quickly.  To do that actual run, use `--apply`:
 
-    ellsync router.json sync art: --apply
+    ellsync router.json sync art --apply
 
 Note that, since the contents of the canonical and the cache normally
 have the same directory structure, `ellsync` allows specifying that
@@ -159,7 +159,8 @@ History
 
 ### 0.4
 
-...
+The `:` in a backup stream identifier is optional, when no subdirectory is being
+specified.
 
 ### 0.3
 
