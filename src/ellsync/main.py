@@ -46,7 +46,8 @@ def sync(router, options):
     if ':' in options.stream_name:
         stream_name, subdir = options.stream_name.split(':')
     else:
-        raise NotImplementedError("Arg must be stream:subdir")
+        stream_name = options.stream_name
+        subdir = None
     stream = router[stream_name]
     from_dir = stream['from']
     to_dir = stream['to']
@@ -111,7 +112,7 @@ def main(args):
     argparser.add_argument('router', metavar='ROUTER', type=str,
         help='JSON file containing the backup router description'
     )
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.3")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.4")
 
     subparsers = argparser.add_subparsers()
 
