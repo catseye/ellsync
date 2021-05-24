@@ -95,8 +95,18 @@ class TestEllsync(unittest.TestCase):
         main(['backup.json', 'sync', 'other', 'basic'])
         output = sys.stdout.getvalue()
         lines = [l for l in output.split('\n') if l.startswith('rsync')]
-        self.assertEqual(lines[0], 'rsync --dry-run --archive --verbose --delete "canonical3/" "cache3/"')
-        self.assertEqual(lines[1], 'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"')
+        self.assertEqual(lines, [
+            'rsync --dry-run --archive --verbose --delete "canonical3/" "cache3/"',
+            'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"',
+        ])
+
+    def test_sync_thorough(self):
+        main(['backup.json', 'sync', 'basic', '--thorough'])
+        output = sys.stdout.getvalue()
+        lines = [l for l in output.split('\n') if l.startswith('rsync')]
+        self.assertEqual(lines, [
+            'rsync --dry-run --checksum --archive --verbose --delete "canonical/" "cache/"',
+        ])
 
     def test_rename(self):
         check_call("mkdir -p canonical/sclupture", shell=True)
