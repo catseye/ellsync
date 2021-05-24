@@ -86,6 +86,21 @@ class TestEllsync(unittest.TestCase):
             ''
         ])
 
+    def test_sync_subdirectory(self):
+        check_call("mkdir -p canonical/subdir", shell=True)
+        check_call("mkdir -p cache/subdir", shell=True)
+        check_call("touch canonical/subdir/stuff", shell=True)
+        main(['backup.json', 'sync', 'basic:subdir', '--apply'])
+        self.assertTrue(os.path.exists('cache/subdir/stuff'))
+        self.assertFalse(os.path.exists('cache/thing'))
+        output = sys.stdout.getvalue()
+        self.assertEqual(output.split('\n')[:4], [
+            'rsync --archive --verbose --delete "canonical/subdir/" "cache/subdir/"',
+            'sending incremental file list',
+            'stuff',
+            ''
+        ])
+
     def test_sync_stream_does_not_exist(self):
         with self.assertRaises(ValueError) as ar:
             main(['backup.json', 'sync', 'notfound', '--apply'])
