@@ -34,7 +34,7 @@ def run_command(cmd):
 
 
 def list_(router, options):
-    for stream_name, stream in router.items():
+    for stream_name, stream in sorted(router.items()):
         if os.path.isdir(stream['from']) and os.path.isdir(stream['to']):
             if options.stream_name_only:
                 print(stream_name)

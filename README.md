@@ -159,8 +159,10 @@ History
 
 ### 0.5
 
-The `sync` subcommand supports multiple streams.  Each stream will be synced in
-the order they are given on the command line.  OS-level `sync` will only be
+The output of the `list` subcommand is now sorted by stream name.
+
+The `sync` subcommand now supports multiple streams.  Each stream will be synced
+in the order they are given on the command line.  OS-level `sync` will only be
 performed once, at the very end.
 
 ### 0.4

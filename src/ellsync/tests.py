@@ -29,21 +29,21 @@ class TestEllsync(unittest.TestCase):
         check_call("mkdir -p canonical", shell=True)
         check_call("touch canonical/thing", shell=True)
         check_call("mkdir -p cache", shell=True)
-        check_call("mkdir -p canonical2", shell=True)
-        check_call("mkdir -p cache2", shell=True)
+        check_call("mkdir -p canonical3", shell=True)
+        check_call("mkdir -p cache3", shell=True)
         router = {
             'basic': {
                 'from': 'canonical',
                 'to': 'cache',
             },
-            'other': {
+            'notfound': {
                 'from': 'canonical2',
                 'to': 'cache2',
             },
-            'notfound': {
+            'other': {
                 'from': 'canonical3',
                 'to': 'cache3',
-            }
+            },
         }
         with open('backup.json', 'w') as f:
             f.write(json.dumps(router))
@@ -58,6 +58,15 @@ class TestEllsync(unittest.TestCase):
     def test_failure(self):
         with self.assertRaises(SystemExit):
             main(['backup.json'])
+
+    def test_list(self):
+        main(['backup.json', 'list'])
+        output = sys.stdout.getvalue()
+        self.assertEqual(output.split('\n'), [
+            'basic: canonical => cache',
+            'other: canonical3 => cache3',
+            '',
+        ])
 
     def test_sync_dry_run(self):
         main(['backup.json', 'sync', 'basic:'])
@@ -80,14 +89,14 @@ class TestEllsync(unittest.TestCase):
     def test_sync_stream_does_not_exist(self):
         with self.assertRaises(ValueError) as ar:
             main(['backup.json', 'sync', 'notfound', '--apply'])
-        self.assertIn("Directory 'canonical3/' is not present", str(ar.exception))
+        self.assertIn("Directory 'canonical2/' is not present", str(ar.exception))
 
     def test_sync_multiple_streams(self):
-        main(['backup.json', 'sync', 'basic', 'other'])
+        main(['backup.json', 'sync', 'other', 'basic'])
         output = sys.stdout.getvalue()
-        lines = output.split('\n')
-        self.assertIn('rsync --dry-run --archive --verbose --delete "canonical/" "cache/"', lines)
-        self.assertIn('rsync --dry-run --archive --verbose --delete "canonical2/" "cache2/"', lines)
+        lines = [l for l in output.split('\n') if l.startswith('rsync')]
+        self.assertEqual(lines[0], 'rsync --dry-run --archive --verbose --delete "canonical3/" "cache3/"')
+        self.assertEqual(lines[1], 'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"')
 
     def test_rename(self):
         check_call("mkdir -p canonical/sclupture", shell=True)
