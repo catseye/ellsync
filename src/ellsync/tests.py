@@ -29,6 +29,8 @@ class TestEllsync(unittest.TestCase):
         check_call("mkdir -p canonical", shell=True)
         check_call("touch canonical/thing", shell=True)
         check_call("mkdir -p cache", shell=True)
+        check_call("mkdir -p canonical2", shell=True)
+        check_call("mkdir -p cache2", shell=True)
         router = {
             'basic': {
                 'from': 'canonical',
@@ -37,6 +39,10 @@ class TestEllsync(unittest.TestCase):
             'other': {
                 'from': 'canonical2',
                 'to': 'cache2',
+            },
+            'notfound': {
+                'from': 'canonical3',
+                'to': 'cache3',
             }
         }
         with open('backup.json', 'w') as f:
@@ -71,10 +77,17 @@ class TestEllsync(unittest.TestCase):
             ''
         ])
 
-    def test_stream_not_exist(self):
+    def test_sync_stream_does_not_exist(self):
         with self.assertRaises(ValueError) as ar:
-            main(['backup.json', 'sync', 'other:', '--apply'])
-        self.assertIn("Directory 'canonical2/' is not present", str(ar.exception))
+            main(['backup.json', 'sync', 'notfound', '--apply'])
+        self.assertIn("Directory 'canonical3/' is not present", str(ar.exception))
+
+    def test_sync_multiple_streams(self):
+        main(['backup.json', 'sync', 'basic', 'other'])
+        output = sys.stdout.getvalue()
+        lines = output.split('\n')
+        self.assertIn('rsync --dry-run --archive --verbose --delete "canonical/" "cache/"', lines)
+        self.assertIn('rsync --dry-run --archive --verbose --delete "canonical2/" "cache2/"', lines)
 
     def test_rename(self):
         check_call("mkdir -p canonical/sclupture", shell=True)

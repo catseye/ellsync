@@ -43,18 +43,23 @@ def list_(router, options):
 
 
 def sync(router, options):
-    if ':' in options.stream_name:
-        stream_name, subdir = options.stream_name.split(':')
-    else:
-        stream_name = options.stream_name
-        subdir = None
-    stream = router[stream_name]
-    from_dir = stream['from']
-    to_dir = stream['to']
-    if subdir:
-        from_dir = os.path.join(from_dir, subdir)
-        to_dir = os.path.join(to_dir, subdir)
+    for stream_name in options.stream_names:
+        if ':' in stream_name:
+            stream_name, subdir = stream_name.split(':')
+        else:
+            subdir = None
+        stream = router[stream_name]
+        from_dir = stream['from']
+        to_dir = stream['to']
+        if subdir:
+            from_dir = os.path.join(from_dir, subdir)
+            to_dir = os.path.join(to_dir, subdir)
+        sync_directories(from_dir, to_dir, options)
+    if options.apply:
+        run_command('sync')
 
+
+def sync_directories(from_dir, to_dir, options):
     from_dir = clean_dir(from_dir)
     to_dir = clean_dir(to_dir)
 
@@ -67,8 +72,6 @@ def sync(router, options):
     checksum_option = '--checksum ' if options.thorough else ''
     cmd = 'rsync {}{}--archive --verbose --delete "{}" "{}"'.format(dry_run_option, checksum_option, from_dir, to_dir)
     run_command(cmd)
-    if not dry_run:
-        run_command('sync')
 
 
 def rename(router, options):
@@ -124,8 +127,8 @@ def main(args):
     parser_list.set_defaults(func=list_)
 
     # - - - - sync - - - -
-    parser_sync = subparsers.add_parser('sync', help='Sync contents across a sync stream specified by name')
-    parser_sync.add_argument('stream_name', metavar='STREAM', type=str,
+    parser_sync = subparsers.add_parser('sync', help='Sync contents across one or more sync streams')
+    parser_sync.add_argument('stream_names', metavar='STREAM', type=str, nargs='+',
         help='Name of stream (or stream:subdirectory) to sync contents across'
     )
     parser_sync.add_argument('--apply', default=False, action='store_true',

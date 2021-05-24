@@ -1,7 +1,7 @@
 `ellsync`
 =========
 
-_Version 0.4_
+_Version 0.5_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
 | _See also:_ [yastasoti](https://github.com/catseye/yastasoti#readme)
 ∘ [tagfarm](https://github.com/catseye/tagfarm#readme)
@@ -84,7 +84,7 @@ not,  `ellsync` detects when a trailing slash is missing and adds it.  Thus
 will work as well as the above.  (But note that the directories specified
 in the router *do* need to have the trailing slashes.)
 
-#### --thorough
+#### `--thorough` option
 
 By default, `rsync` does not attempt to sync the contents of an existing file
 if the destination file has a same-or-newer timestamp as the source file.
@@ -156,6 +156,12 @@ TODO
 
 History
 -------
+
+### 0.5
+
+The `sync` subcommand supports multiple streams.  Each stream will be synced in
+the order they are given on the command line.  OS-level `sync` will only be
+performed once, at the very end.
 
 ### 0.4
 
