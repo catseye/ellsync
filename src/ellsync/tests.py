@@ -29,15 +29,21 @@ class TestEllsync(unittest.TestCase):
         check_call("mkdir -p canonical", shell=True)
         check_call("touch canonical/thing", shell=True)
         check_call("mkdir -p cache", shell=True)
+        check_call("mkdir -p canonical3", shell=True)
+        check_call("mkdir -p cache3", shell=True)
         router = {
             'basic': {
                 'from': 'canonical',
                 'to': 'cache',
             },
-            'other': {
+            'notfound': {
                 'from': 'canonical2',
                 'to': 'cache2',
-            }
+            },
+            'other': {
+                'from': 'canonical3',
+                'to': 'cache3',
+            },
         }
         with open('backup.json', 'w') as f:
             f.write(json.dumps(router))
@@ -53,11 +59,20 @@ class TestEllsync(unittest.TestCase):
         with self.assertRaises(SystemExit):
             main(['backup.json'])
 
+    def test_list(self):
+        main(['backup.json', 'list'])
+        output = sys.stdout.getvalue()
+        self.assertEqual(output.split('\n'), [
+            'basic: canonical => cache',
+            'other: canonical3 => cache3',
+            '',
+        ])
+
     def test_sync_dry_run(self):
         main(['backup.json', 'sync', 'basic:'])
         self.assertFalse(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
-        self.assertEqual(output.split('\n')[0], 'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"')
+        self.assertEqual(output.split('\n')[0], 'rsync --dry-run --archive --verbose --delete canonical/ cache/')
         self.assertIn('DRY RUN', output)
 
     def test_sync_apply(self):
@@ -65,16 +80,66 @@ class TestEllsync(unittest.TestCase):
         self.assertTrue(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
         self.assertEqual(output.split('\n')[:4], [
-            'rsync --archive --verbose --delete "canonical/" "cache/"',
+            'rsync --archive --verbose --delete canonical/ cache/',
             'sending incremental file list',
             'thing',
             ''
         ])
 
-    def test_stream_not_exist(self):
+    def test_sync_subdirectory(self):
+        check_call("mkdir -p canonical/subdir", shell=True)
+        check_call("mkdir -p cache/subdir", shell=True)
+        check_call("touch canonical/subdir/stuff", shell=True)
+        main(['backup.json', 'sync', 'basic:subdir', '--apply'])
+        self.assertTrue(os.path.exists('cache/subdir/stuff'))
+        self.assertFalse(os.path.exists('cache/thing'))
+        output = sys.stdout.getvalue()
+        self.assertEqual(output.split('\n')[:4], [
+            'rsync --archive --verbose --delete canonical/subdir/ cache/subdir/',
+            'sending incremental file list',
+            'stuff',
+            ''
+        ])
+
+    def test_sync_stream_does_not_exist(self):
         with self.assertRaises(ValueError) as ar:
-            main(['backup.json', 'sync', 'other:', '--apply'])
+            main(['backup.json', 'sync', 'notfound', '--apply'])
         self.assertIn("Directory 'canonical2/' is not present", str(ar.exception))
+
+    def test_sync_multiple_streams(self):
+        main(['backup.json', 'sync', 'other', 'basic'])
+        output = sys.stdout.getvalue()
+        lines = [l for l in output.split('\n') if l.startswith('rsync')]
+        self.assertEqual(lines, [
+            'rsync --dry-run --archive --verbose --delete canonical3/ cache3/',
+            'rsync --dry-run --archive --verbose --delete canonical/ cache/',
+        ])
+
+    def test_sync_thorough(self):
+        main(['backup.json', 'sync', 'basic', '--thorough'])
+        output = sys.stdout.getvalue()
+        lines = [l for l in output.split('\n') if l.startswith('rsync')]
+        self.assertEqual(lines, [
+            'rsync --dry-run --checksum --archive --verbose --delete canonical/ cache/',
+        ])
+
+    def test_sync_with_spaces_in_dirnames(self):
+        check_call("mkdir -p 'can onical'", shell=True)
+        check_call("mkdir -p 'ca che'", shell=True)
+        router = {
+            'spaced': {
+                'from': 'can onical',
+                'to': 'ca che',
+            },
+        }
+        with open('backup.json', 'w') as f:
+            f.write(json.dumps(router))
+        main(['backup.json', 'sync', 'spaced'])
+        output = sys.stdout.getvalue()
+        lines = [l for l in output.split('\n') if l.startswith('rsync')]
+        self.assertEqual(lines, [
+            'rsync --dry-run --archive --verbose --delete "can onical/" "ca che/"',
+        ])
 
     def test_rename(self):
         check_call("mkdir -p canonical/sclupture", shell=True)

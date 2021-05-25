@@ -14,14 +14,16 @@ def clean_dir(dirname):
     return dirname
 
 
-def run_command(cmd):
-    sys.stdout.write(cmd + '\n')
+def run_command(argv):
+    def pretty(s):
+        return '"{}"'.format(s) if ' ' in s else s
+    sys.stdout.write(' '.join([pretty(a) for a in argv]) + '\n')
     try:
-        p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
+        p = Popen(argv, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
         decode_line = lambda line: line
     except TypeError:
         # python 2.x
-        p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE)
+        p = Popen(argv, stderr=STDOUT, stdout=PIPE)
         decode_line = lambda line: line.decode('utf-8')
     pipe = p.stdout
     for line in p.stdout:
@@ -34,7 +36,7 @@ def run_command(cmd):
 
 
 def list_(router, options):
-    for stream_name, stream in router.items():
+    for stream_name, stream in sorted(router.items()):
         if os.path.isdir(stream['from']) and os.path.isdir(stream['to']):
             if options.stream_name_only:
                 print(stream_name)
@@ -43,18 +45,23 @@ def list_(router, options):
 
 
 def sync(router, options):
-    if ':' in options.stream_name:
-        stream_name, subdir = options.stream_name.split(':')
-    else:
-        stream_name = options.stream_name
-        subdir = None
-    stream = router[stream_name]
-    from_dir = stream['from']
-    to_dir = stream['to']
-    if subdir:
-        from_dir = os.path.join(from_dir, subdir)
-        to_dir = os.path.join(to_dir, subdir)
+    for stream_name in options.stream_names:
+        if ':' in stream_name:
+            stream_name, subdir = stream_name.split(':')
+        else:
+            subdir = None
+        stream = router[stream_name]
+        from_dir = stream['from']
+        to_dir = stream['to']
+        if subdir:
+            from_dir = os.path.join(from_dir, subdir)
+            to_dir = os.path.join(to_dir, subdir)
+        sync_directories(from_dir, to_dir, options)
+    if options.apply:
+        run_command(['sync'])
 
+
+def sync_directories(from_dir, to_dir, options):
     from_dir = clean_dir(from_dir)
     to_dir = clean_dir(to_dir)
 
@@ -62,13 +69,13 @@ def sync(router, options):
         if not os.path.isdir(d):
             raise ValueError("Directory '{}' is not present".format(d))
 
-    dry_run = not options.apply
-    dry_run_option = '--dry-run ' if dry_run else ''
-    checksum_option = '--checksum ' if options.thorough else ''
-    cmd = 'rsync {}{}--archive --verbose --delete "{}" "{}"'.format(dry_run_option, checksum_option, from_dir, to_dir)
-    run_command(cmd)
-    if not dry_run:
-        run_command('sync')
+    argv = ['rsync']
+    if not options.apply:
+        argv.append('--dry-run')
+    if options.thorough:
+        argv.append('--checksum')
+    argv.extend(['--archive', '--verbose', '--delete', from_dir, to_dir])
+    run_command(argv)
 
 
 def rename(router, options):
@@ -112,7 +119,7 @@ def main(args):
     argparser.add_argument('router', metavar='ROUTER', type=str,
         help='JSON file containing the backup router description'
     )
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.4")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.5")
 
     subparsers = argparser.add_subparsers()
 
@@ -124,8 +131,8 @@ def main(args):
     parser_list.set_defaults(func=list_)
 
     # - - - - sync - - - -
-    parser_sync = subparsers.add_parser('sync', help='Sync contents across a sync stream specified by name')
-    parser_sync.add_argument('stream_name', metavar='STREAM', type=str,
+    parser_sync = subparsers.add_parser('sync', help='Sync contents across one or more sync streams')
+    parser_sync.add_argument('stream_names', metavar='STREAM', type=str, nargs='+',
         help='Name of stream (or stream:subdirectory) to sync contents across'
     )
     parser_sync.add_argument('--apply', default=False, action='store_true',

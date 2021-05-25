@@ -1,7 +1,7 @@
 `ellsync`
 =========
 
-_Version 0.4_
+_Version 0.5_
 | _Entry_ [@ catseye.tc](https://catseye.tc/node/ellsync)
 | _See also:_ [yastasoti](https://github.com/catseye/yastasoti#readme)
 ∘ [tagfarm](https://github.com/catseye/tagfarm#readme)
@@ -84,7 +84,7 @@ not,  `ellsync` detects when a trailing slash is missing and adds it.  Thus
 will work as well as the above.  (But note that the directories specified
 in the router *do* need to have the trailing slashes.)
 
-#### --thorough
+#### `--thorough` option
 
 By default, `rsync` does not attempt to sync the contents of an existing file
 if the destination file has a same-or-newer timestamp as the source file.
@@ -148,14 +148,25 @@ TODO
     is for example owned by another user and not world-readable, it will abort.
     `ellsync` does not currently detect this properly.  It should be made to handle
     it gracefully, if possible.
-*   Tab-completion of stream names.
-*   Better test case for `--thorough`.
-*   When executing system commands, don't use shell expansion.
 *   (Aspirational) Ability to convert the backup router to a `dot` file (`graphviz`)
     so that the relationships between the streams can be easily visualized.
 
 History
 -------
+
+### 0.5
+
+The output of the `list` subcommand is now sorted by stream name.
+
+The `sync` subcommand now supports multiple streams.  Each stream will be synced
+in the order they are given on the command line.  OS-level `sync` will only be
+performed once, at the very end.
+
+A bash tab-completion script is included in the `script` directory.  It enables
+tab-completion of both subcommand names, and stream names in the `sync` subcommand.
+
+Internally, shell expansion is no longer used when executing system commands, and
+several new tests have been added to the test suite.
 
 ### 0.4
 
