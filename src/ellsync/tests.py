@@ -72,7 +72,7 @@ class TestEllsync(unittest.TestCase):
         main(['backup.json', 'sync', 'basic:'])
         self.assertFalse(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
-        self.assertEqual(output.split('\n')[0], 'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"')
+        self.assertEqual(output.split('\n')[0], 'rsync --dry-run --archive --verbose --delete canonical/ cache/')
         self.assertIn('DRY RUN', output)
 
     def test_sync_apply(self):
@@ -80,7 +80,7 @@ class TestEllsync(unittest.TestCase):
         self.assertTrue(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
         self.assertEqual(output.split('\n')[:4], [
-            'rsync --archive --verbose --delete "canonical/" "cache/"',
+            'rsync --archive --verbose --delete canonical/ cache/',
             'sending incremental file list',
             'thing',
             ''
@@ -95,7 +95,7 @@ class TestEllsync(unittest.TestCase):
         self.assertFalse(os.path.exists('cache/thing'))
         output = sys.stdout.getvalue()
         self.assertEqual(output.split('\n')[:4], [
-            'rsync --archive --verbose --delete "canonical/subdir/" "cache/subdir/"',
+            'rsync --archive --verbose --delete canonical/subdir/ cache/subdir/',
             'sending incremental file list',
             'stuff',
             ''
@@ -111,8 +111,8 @@ class TestEllsync(unittest.TestCase):
         output = sys.stdout.getvalue()
         lines = [l for l in output.split('\n') if l.startswith('rsync')]
         self.assertEqual(lines, [
-            'rsync --dry-run --archive --verbose --delete "canonical3/" "cache3/"',
-            'rsync --dry-run --archive --verbose --delete "canonical/" "cache/"',
+            'rsync --dry-run --archive --verbose --delete canonical3/ cache3/',
+            'rsync --dry-run --archive --verbose --delete canonical/ cache/',
         ])
 
     def test_sync_thorough(self):
@@ -120,7 +120,25 @@ class TestEllsync(unittest.TestCase):
         output = sys.stdout.getvalue()
         lines = [l for l in output.split('\n') if l.startswith('rsync')]
         self.assertEqual(lines, [
-            'rsync --dry-run --checksum --archive --verbose --delete "canonical/" "cache/"',
+            'rsync --dry-run --checksum --archive --verbose --delete canonical/ cache/',
+        ])
+
+    def test_sync_with_spaces_in_dirnames(self):
+        check_call("mkdir -p 'can onical'", shell=True)
+        check_call("mkdir -p 'ca che'", shell=True)
+        router = {
+            'spaced': {
+                'from': 'can onical',
+                'to': 'ca che',
+            },
+        }
+        with open('backup.json', 'w') as f:
+            f.write(json.dumps(router))
+        main(['backup.json', 'sync', 'spaced'])
+        output = sys.stdout.getvalue()
+        lines = [l for l in output.split('\n') if l.startswith('rsync')]
+        self.assertEqual(lines, [
+            'rsync --dry-run --archive --verbose --delete "can onical/" "ca che/"',
         ])
 
     def test_rename(self):

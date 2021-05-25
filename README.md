@@ -148,8 +148,6 @@ TODO
     is for example owned by another user and not world-readable, it will abort.
     `ellsync` does not currently detect this properly.  It should be made to handle
     it gracefully, if possible.
-*   Better test case for `--thorough`.
-*   When executing system commands, don't use shell expansion.
 *   (Aspirational) Ability to convert the backup router to a `dot` file (`graphviz`)
     so that the relationships between the streams can be easily visualized.
 
@@ -166,6 +164,9 @@ performed once, at the very end.
 
 A bash tab-completion script is included in the `script` directory.  It enables
 tab-completion of both subcommand names, and stream names in the `sync` subcommand.
+
+Internally, shell expansion is no longer used when executing system commands, and
+several new tests have been added to the test suite.
 
 ### 0.4
 

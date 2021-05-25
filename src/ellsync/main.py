@@ -14,14 +14,16 @@ def clean_dir(dirname):
     return dirname
 
 
-def run_command(cmd):
-    sys.stdout.write(cmd + '\n')
+def run_command(argv):
+    def pretty(s):
+        return '"{}"'.format(s) if ' ' in s else s
+    sys.stdout.write(' '.join([pretty(a) for a in argv]) + '\n')
     try:
-        p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
+        p = Popen(argv, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
         decode_line = lambda line: line
     except TypeError:
         # python 2.x
-        p = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE)
+        p = Popen(argv, stderr=STDOUT, stdout=PIPE)
         decode_line = lambda line: line.decode('utf-8')
     pipe = p.stdout
     for line in p.stdout:
@@ -56,7 +58,7 @@ def sync(router, options):
             to_dir = os.path.join(to_dir, subdir)
         sync_directories(from_dir, to_dir, options)
     if options.apply:
-        run_command('sync')
+        run_command(['sync'])
 
 
 def sync_directories(from_dir, to_dir, options):
@@ -67,11 +69,13 @@ def sync_directories(from_dir, to_dir, options):
         if not os.path.isdir(d):
             raise ValueError("Directory '{}' is not present".format(d))
 
-    dry_run = not options.apply
-    dry_run_option = '--dry-run ' if dry_run else ''
-    checksum_option = '--checksum ' if options.thorough else ''
-    cmd = 'rsync {}{}--archive --verbose --delete "{}" "{}"'.format(dry_run_option, checksum_option, from_dir, to_dir)
-    run_command(cmd)
+    argv = ['rsync']
+    if not options.apply:
+        argv.append('--dry-run')
+    if options.thorough:
+        argv.append('--checksum')
+    argv.extend(['--archive', '--verbose', '--delete', from_dir, to_dir])
+    run_command(argv)
 
 
 def rename(router, options):
