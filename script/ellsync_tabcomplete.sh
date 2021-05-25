@@ -8,7 +8,11 @@ function _ellsync_tabcomplete_()
     local word=${COMP_WORDS[COMP_CWORD]}
     local line=${COMP_LINE}
 
-    IFS=' ' read -raargv<<< "$line"
+    # Split the command line into arguments and place them in the $argv[@] array.
+    # We append a character ('%') so that we can tell if user is on a partial word or on a space.
+    # So, the count in $argc is right, but the final value in the $argv[@] array is not accurate.
+    # That's acceptable for our purposes.
+    IFS=' ' read -raargv<<< "$line%"
     local argc=${#argv[@]}
 
     if [ $argc -eq 2 ]; then
@@ -17,7 +21,7 @@ function _ellsync_tabcomplete_()
       COMPREPLY=($(compgen -W "list sync rename" "${word}"))
     elif [ $argc -gt 3 ]; then
       local router="${argv[1]}"
-      local streams=`ellsync $router list --stream-name-only`
+      local streams=`ellsync $router list --stream-name-only 2>/dev/null`
       COMPREPLY=($(compgen -W "${streams}" "${word}"))
     fi
 }
